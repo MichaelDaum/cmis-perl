@@ -311,6 +311,7 @@ sub isVersionable {
   return WebService::Cmis::Property::parseBoolean($_[0]->getAttribute('versionable'));
 }
 
+=back
 
 =head1 AUTHOR
 

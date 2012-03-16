@@ -166,6 +166,8 @@ The following optional arguments are supported:
 =item addACEs
 =item removeACEs
 
+=back
+
 TODO: support repositories without PWCUpdate capabilities
 
 =cut
@@ -388,6 +390,8 @@ Use the renditions properties to get a specific one:
 =item length
 =item title
 
+=back
+
 =cut
 
 sub getRenditionLink {
@@ -488,6 +492,8 @@ The following optional arguments are not yet supported:
 =item policies
 =item addACEs
 =item removeACEs
+
+=back
 
 TODO: This is not yet implemented.
 

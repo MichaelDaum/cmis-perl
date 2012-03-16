@@ -32,6 +32,10 @@ our %classOfBaseTypeId = (
 our $CMIS_XPATH_PROPERTIES = new XML::LibXML::XPathExpression('./*[local-name()="object" and namespace-uri()="'.CMISRA_NS.'"]/*[local-name()="properties" and namespace-uri()="'.CMIS_NS.'"]/*[@propertyDefinitionId]');
 our $CMIS_XPATH_ALLOWABLEACTIONS = new XML::LibXML::XPathExpression('./*[local-name() = "object" and namespace-uri()="'.CMISRA_NS.'"]/*[local-name() = "allowableActions" and namespace-uri() ="'.CMIS_NS.'"]');
 
+=head1 METHODS
+
+=over 4
+
 =item new(repository=>$repository, xmlDoc=>$xmlDoc) -> $object
 
 constructor to get a specialized object, a subclass of WebService::Cmis::Object

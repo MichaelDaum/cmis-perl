@@ -49,6 +49,8 @@ The following optional arguments are supported:
 =item includeAllowableActions
 =item includePathSegment
 
+=back
+
 =cut
 
 sub getChildren {

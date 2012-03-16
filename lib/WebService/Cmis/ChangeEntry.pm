@@ -111,6 +111,8 @@ one of:
 =item deleted
 =item security
 
+=back
+
 =cut
 
 sub getChangeType {

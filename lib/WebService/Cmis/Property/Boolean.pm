@@ -17,6 +17,10 @@ use warnings;
 use WebService::Cmis::Property ();
 our @ISA = qw(WebService::Cmis::Property);
 
+=head1 METHODS
+
+=over 4
+
 =item parse($cmisValue) -> $perlValue
 
 static helper to convert the given string into its perl representation
@@ -54,6 +58,8 @@ sub unparse {
   return 'true' if $value eq '1';
   return $value;
 }
+
+=back
 
 =head1 AUTHOR
 

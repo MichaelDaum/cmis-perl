@@ -18,6 +18,10 @@ use WebService::Cmis::Property ();
 use POSIX ();
 our @ISA = qw(WebService::Cmis::Property);
 
+=head1 METHODS
+
+=over 4
+
 =item parse($string) -> $integer
 
 convert the given string into integer
@@ -27,6 +31,8 @@ convert the given string into integer
 sub parse {
   return int(POSIX::strtol($_[1]||''));
 }
+
+=back
 
 =head1 AUTHOR
 

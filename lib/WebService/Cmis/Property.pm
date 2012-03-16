@@ -391,6 +391,7 @@ sub formatDecimal {
   return WebService::Cmis::Property::Decimal->unparse(@_);
 }
 
+=back
 
 =head1 AUTHOR
 

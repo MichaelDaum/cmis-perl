@@ -18,6 +18,10 @@ use WebService::Cmis::Property ();
 use POSIX ();
 our @ISA = qw(WebService::Cmis::Property);
 
+=head1 METHODS
+
+=over 4
+
 =item parse($string) -> $decimal
 
 convert the given string into a decimal
@@ -28,6 +32,7 @@ sub parse {
   return POSIX::strtod($_[1]||'');
 }
 
+=back
 
 =head1 AUTHOR
 

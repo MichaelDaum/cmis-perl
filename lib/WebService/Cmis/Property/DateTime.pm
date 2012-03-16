@@ -19,6 +19,10 @@ use Time::Local ();
 our @ISA = qw(WebService::Cmis::Property);
 our $TZSTRING;  # timezone string for servertime; "Z" or "+01:00" etc.
 
+=head1 METHODS
+
+=over 4
+
 =item parse($isoDate) -> $epoch
 
 convert the given string into epoch seconds. The date string
@@ -128,6 +132,7 @@ sub _tzOffset {
   return $off;
 }
 
+=back
 
 =head1 AUTHOR
 
