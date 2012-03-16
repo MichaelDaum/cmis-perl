@@ -1,0 +1,7 @@
+-q 
+-l=0 
+-i=2 
+-pt=2 
+-nsfs 
+-ce
+-novalign
