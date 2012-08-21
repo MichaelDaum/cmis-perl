@@ -38,12 +38,12 @@ sub parse {
   if ($isoDate =~ /(\d\d\d\d)(?:-(\d\d)(?:-(\d\d))?)?(?:T(\d\d)(?::(\d\d)(?::(\d\d(?:\.\d+)?))?)?)?(Z|[-+]\d\d(?::\d\d)?)?/) {
     my ($Y, $M, $D, $h, $m, $s, $tz) = ($1, $2 || 1, $3 || 1, $4 || 0, $5 || 0, $6 || 0, $7 || '');
 
+    # strip milliseconds
+    $s =~ s/\.\d+$//;
+
     $M--;
-    $Y -= 1900 if ($Y > 1900);
 
-    #print STDERR "parsing hour=$h\n";
-
-    return Time::Local::timegm($s, $m, $h, $D, $M, $Y);
+    return Time::Local::timegm($s, $m, $h, $D, $M, $Y).$tz;
   }
 
   # format does not match
@@ -61,39 +61,35 @@ sub unparse {
 
   $value = $this->{value} if ref($this) && !defined $value;
 
-  $value =~ s/[^\d]//g;
+  my $milliseconds;
+  if ($value =~ s/(\.\d+)$//) {
+    $milliseconds = $1;
+  }
 
   return 'none' if !defined $value || $value eq '';
 
-  my ($sec, $min, $hour, $day, $mon, $year, $wday, $yday) = gmtime($value);
+  my $tz;
+  if ($value =~ /^(\d+)(Z|[-+]\d\d(?::\d\d)?)?$/) {
+    $value = $1;
+    $tz = $2 || '';
+  } else {
+    return 'none';
+  }
+
+  my ($sec, $min, $hour, $day, $mon, $year, $wday, $yday, $isdst) = gmtime($value);
   #print STDERR "unparsing hour=$hour\n";
+  #print STDERR "isdst=$isdst\n";
 
   my $formatString = '$year-$mo-$dayT$hour:$min:$sec$isotz';
 
+  $formatString =~ s/\$m(illi)?seco?n?d?s?/sprintf('%.3u',$sec)/gei;
   $formatString =~ s/\$seco?n?d?s?/sprintf('%.2u',$sec)/gei;
   $formatString =~ s/\$minu?t?e?s?/sprintf('%.2u',$min)/gei;
   $formatString =~ s/\$hour?s?/sprintf('%.2u',$hour)/gei;
   $formatString =~ s/\$day/sprintf('%.2u',$day)/gei;
   $formatString =~ s/\$mo/sprintf('%.2u',$mon+1)/gei;
   $formatString =~ s/\$year?/sprintf('%.4u',$year + 1900)/gei;
-
-  if ($formatString =~ /\$isotz/) {
-
-    # time zone designator (+hh:mm or -hh:mm)
-    unless (defined $TZSTRING) {
-      my $offset = _tzOffset();
-      my $sign = ($offset < 0) ? '-' : '+';
-      $offset = abs($offset);
-      my $hours = int($offset / 3600);
-      my $mins = int(($offset - $hours * 3600) / 60);
-      if ($hours || $mins) {
-        $TZSTRING = sprintf("$sign%02d:%02d", $hours, $mins);
-      } else {
-        $TZSTRING = 'Z';
-      }
-    }
-    $formatString =~ s/\$isotz/$TZSTRING/g;
-  }
+  $formatString =~ s/\$isotz/$tz/g;
 
   return $formatString;
 }
@@ -103,6 +99,25 @@ sub unparse {
 # any copyright and puts his contribution to this module in the public
 # domain."
 # Note that unit tests rely on this function being here.
+sub getTZSTRING {
+
+  # time zone designator (+hh:mm or -hh:mm)
+  unless (defined $TZSTRING) {
+    my $offset = _tzOffset();
+    my $sign = ($offset < 0) ? '-' : '+';
+    $offset = abs($offset);
+    my $hours = int($offset / 3600);
+    my $mins = int(($offset - $hours * 3600) / 60);
+    if ($hours || $mins) {
+      $TZSTRING = sprintf("$sign%02d:%02d", $hours, $mins);
+    } else {
+      $TZSTRING = 'Z';
+    }
+  }
+
+  return $TZSTRING;
+}
+
 sub _tzOffset {
   my $time = time();
   my @l = localtime($time);

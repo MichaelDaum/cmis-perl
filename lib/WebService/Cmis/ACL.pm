@@ -59,7 +59,14 @@ return a string representation of this object
 =cut
 
 sub toString {
-  return $_[0]->getId();
+  my $this = shift;
+
+  my @result = ();
+  foreach my $ace ($this->getEntries) {
+    push @result, $ace->toString;
+  }
+
+  return join("\n", @result);
 }
 
 =item addEntry($ace)

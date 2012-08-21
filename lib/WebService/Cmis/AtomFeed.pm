@@ -24,6 +24,7 @@ our $CMIS_XPATH_TITLE = new XML::LibXML::XPathExpression('./*[local-name() = "ti
 our $CMIS_XPATH_UPDATED = new XML::LibXML::XPathExpression('./*[local-name() = "updated" and namespace-uri() ="'.ATOM_NS.'"]');
 our $CMIS_XPATH_GENERATOR = new XML::LibXML::XPathExpression('./*[local-name() = "generator" and namespace-uri() ="'.ATOM_NS.'"]');
 our $CMIS_XPATH_NUMITEMS = new XML::LibXML::XPathExpression('./*[local-name() = "numItems" and namespace-uri() ="'.CMISRA_NS.'"]');
+our $CMIS_XPATH_PAGESIZE = new XML::LibXML::XPathExpression('./*[local-name() = "itemsPerPage" and namespace-uri() ="'.OPENSEARCH_NS.'"]');
 our $CMIS_XPATH_TOTALRESULTS = new XML::LibXML::XPathExpression('./*[local-name() = "totalResults" and namespace-uri() ="'.OPENSEARCH_NS.'"]');
 
 =head1 METHODS
@@ -57,6 +58,7 @@ sub _initData {
   undef $this->{updated};
   undef $this->{generator};
   undef $this->{totalResults};
+  undef $this->{pageSize};
 }
 
 =item DESTROY
@@ -307,6 +309,24 @@ sub getSize {
   }
 
   return $this->{totalResults};
+}
+
+=item getPageSize -> $integer
+
+returns the size of a page in the result set. this should equal the maxItem value if set in a query
+
+=cut
+
+sub getPageSize {
+  my $this = shift;
+
+  unless (defined $this->{pageSize}) {
+    $this->{pageSize} = 
+      $this->{xmlDoc}->documentElement->findvalue($CMIS_XPATH_PAGESIZE) || 
+      scalar(@{$this->_getPageEntries});
+  }
+
+  return $this->{pageSize};
 }
 
 

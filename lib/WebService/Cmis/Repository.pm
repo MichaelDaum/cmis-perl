@@ -964,7 +964,7 @@ sub query {
   my $result = $this->{client}->post($queryUrl, $xmlDoc->toString, CMIS_QUERY_TYPE);
 
   # return the result set
-  require WebService::Cmis::AtomFeed;
+  require WebService::Cmis::AtomFeed::Objects;
   return new WebService::Cmis::AtomFeed::Objects(repository=>$this, xmlDoc=>$result);
 }
 
@@ -983,7 +983,6 @@ sub _getQueryXmlDoc {
   my $xmlDoc = new XML::LibXML::Document('1.0', 'UTF-8');
 
   my $queryElement = $xmlDoc->createElementNS(CMIS_NS, "query");
-  #$queryElement->addChild($xmlDoc->createAttribute('xmlns', CMIS_NS));
 
   $xmlDoc->setDocumentElement($queryElement);
 
