@@ -1,10 +1,10 @@
 ---
-abstract: ~
+abstract: Perl interface to CMIS-compliant document management systems
 author:
   - 'Michael Daum <daum@michaeldaumconsulting.com>'
 build_requires:
   ExtUtils::MakeMaker: 6.42
-  Test::More: 0
+  Test::Class: 0
 configure_requires:
   ExtUtils::MakeMaker: 6.42
 distribution_type: module
@@ -20,4 +20,4 @@ no_index:
     - t
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.01
+version: 0.02

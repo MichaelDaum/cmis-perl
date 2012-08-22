@@ -5,30 +5,31 @@ use strict;
 
 =head1 NAME
 
-WebService::Cmis 
-
-=head1 VERSION
-
-Version 0.01
+WebService::Cmis - Perl interface to CMIS-compliant document management systems
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
-CMIS bindings for perl
-
     use WebService::Cmis;
 
-    my $client = WebService::Cmis::getClient(...);
+    my $client = WebService::Cmis::getClient(
+      url => "http://.../alfresco/service/cmis",
+      user => "...",
+      password => "proxy"
+    );
+
+    my $repo = $client->getRepository;
+    my $root = $client->getRootFolder;
     ...
 
 =head1 DESCRIPTION
 
-Provides a CMIS client library for Perl that can be used to work with
+This library provides a CMIS client library for Perl that can be used to work with
 CMIS-compliant repositories such as Alfresco, IBM FileNet, Nuxeo and others.
-CMIS is a proposed specification with backing by major ECM players including
+CMIS is an OASIS approved specification with backing by major ECM players including
 those mentioned as well as Microsoft, Oracle, and SAP. 
 
 CMIS providers must expose both Web Services and Restful AtomPub bindings.

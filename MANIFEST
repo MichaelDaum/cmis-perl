@@ -19,7 +19,6 @@ t/manifest.t
 t/pod-coverage.t
 t/pod.t
 t/data/free.jpg
-lib/REST/Client.pm
 lib/WebService/Cmis/ACE.pm
 lib/WebService/Cmis/ACL.pm
 lib/WebService/Cmis/AtomEntry.pm

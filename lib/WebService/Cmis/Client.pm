@@ -261,6 +261,7 @@ sub request {
       content => $this->{_res}->content,
       code => $this->{_res}->code,
       status_line => $this->{_res}->status_line,
+      base => $this->{_res}->base,
     };
     $this->_cacheSet($url, $cacheEntry);
   }
@@ -285,6 +286,12 @@ sub responseStatusLine {
 
   return $this->{_cacheEntry}{status_line} if $this->{_cacheEntry};
   return $this->{_res}->status_line;
+}
+
+sub responseBase {
+  my $this = shift;
+  return $this->{_cacheEntry}{base} if $this->{_cacheEntry};
+  return $this->{_res}->base;
 }
 
 sub _untaint {

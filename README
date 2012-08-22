@@ -1,15 +1,20 @@
 WebService-Cmis
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+This library provides a CMIS client library for Perl that can be used to work with
+CMIS-compliant repositories such as Alfresco, IBM FileNet, Nuxeo and others.
+CMIS is an OASIS approved specification with backing by major ECM players including
+those mentioned as well as Microsoft, Oracle, and SAP. 
 
-A README file is required for CPAN modules since CPAN extracts the README
-file from a module distribution so that people browsing the archive
-can use it to get an idea of the module's uses. It is usually a good idea
-to provide version information here so that people can decide whether
-fixes for the module are worth downloading.
+CMIS providers must expose both Web Services and Restful AtomPub bindings.
+WebService::Cmis uses the Restful AtomPub binding to communicate with the CMIS
+repository. All you have to tell WebService::Cmis is the repository's service
+URL and your credentials. There is nothing to install on the server side. 
+
+Note: this implementation is inspired by the Pyhton implementation
+L<http://code.google.com/p/cmislib> written by Jeff Potts.
+
+See the L<http://docs.oasis-open.org/cmis/CMIS/v1.0/cs01/cmis-spec-v1.0.html>
+for a full understanding of what CMIS is.
 
 
 INSTALLATION
