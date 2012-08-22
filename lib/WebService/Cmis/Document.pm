@@ -501,8 +501,28 @@ TODO: This is not yet implemented.
 
 sub copy { throw WebService::Cmis::NotImplementedException; }
 
+=item getPropertiesOfLatestVersion
+
+TODO: This is not yet implemented.
+
+=cut
+
 sub getPropertiesOfLatestVersion { throw WebService::Cmis::NotImplementedException; }
+
+=item setContentStream
+
+TODO: This is not yet implemented.
+
+=cut
+
 sub setContentStream { throw WebService::Cmis::NotImplementedException; }
+
+=item deleteContentStream
+
+TODO: This is not yet implemented.
+
+=cut
+
 sub deleteContentStream { throw WebService::Cmis::NotImplementedException; }
 
 =back

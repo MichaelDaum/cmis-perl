@@ -269,24 +269,50 @@ sub request {
   return $result;
 }
 
+=item responseContent
+
+returns the full content of a response
+
+=cut
+
 sub responseContent {
   my $this = shift;
 
   return $this->{_cacheEntry}{content} if $this->{_cacheEntry};
   return $this->{_res}->content;
 }
+
+=item responseCode
+
+returns the HTTP status code of the repsonse
+
+=cut
+
 sub responseCode {
   my $this = shift;
 
   return $this->{_cacheEntry}{code} if $this->{_cacheEntry};
   return $this->{_res}->code;
 }
+
+=item responseStatusLine
+
+returns the "code message" of the response. (See HTTP::Status)
+
+=cut
+
 sub responseStatusLine {
   my $this = shift;
 
   return $this->{_cacheEntry}{status_line} if $this->{_cacheEntry};
   return $this->{_res}->status_line;
 }
+
+=item responseBase -> $uri
+
+returns the base uri for this response
+
+=cut
 
 sub responseBase {
   my $this = shift;

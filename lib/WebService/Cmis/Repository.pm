@@ -1160,7 +1160,20 @@ sub createFolder {
   );
 }
 
+=item createRelationship
+
+TODO: This is not yet implemented.
+
+=cut
+
 sub createRelationship { throw WebService::Cmis::NotImplementedException; }
+
+=item createPolicy
+
+TODO: This is not yet implemented.
+
+=cut
+
 sub createPolicy { throw WebService::Cmis::NotImplementedException; }
 
 =back

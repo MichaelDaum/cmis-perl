@@ -25,9 +25,36 @@ our @ISA = ('WebService::Cmis::Object');
 
 =cut
 
+=item getSource
+
+TODO: This is not yet implemented.
+
+=cut
+
 sub getSource { throw WebService::Cmis::NotImplementedException; }
+
+=item getSourceId
+
+TODO: This is not yet implemented.
+
+=cut
+
 sub getSourceId { throw WebService::Cmis::NotImplementedException; }
+
+=item getTarget
+
+TODO: This is not yet implemented.
+
+=cut
+
 sub getTarget { throw WebService::Cmis::NotImplementedException; }
+
+=item getTargetId
+
+TODO: This is not yet implemented.
+
+=cut
+
 sub getTargetId { throw WebService::Cmis::NotImplementedException; }
 
 =back

@@ -94,12 +94,15 @@ sub unparse {
   return $formatString;
 }
 
-# Get timezone offset from GMT in seconds
-# Code taken from CPAN module 'Time' - "David Muir Sharnoff disclaims
-# any copyright and puts his contribution to this module in the public
-# domain."
-# Note that unit tests rely on this function being here.
-sub getTZSTRING {
+=item getTZString
+
+Get timezone offset of the local time from GMT in seconds.
+Code taken from CPAN module 'Time' - "David Muir Sharnoff disclaims any
+copyright and puts his contribution to this module in the public domain.
+
+=cut
+
+sub getTZString {
 
   # time zone designator (+hh:mm or -hh:mm)
   unless (defined $TZSTRING) {

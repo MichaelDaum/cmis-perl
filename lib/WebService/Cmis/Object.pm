@@ -609,10 +609,36 @@ sub updateSummary {
   return $this;
 }
 
+=item applyACL()
+
+TODO: This is not yet implemented.
+
+=cut
 
 sub applyACL { throw WebService::Cmis::NotImplementedException; }
+
+=item applyPolicy()
+
+TODO: This is not yet implemented.
+
+=cut
+
 sub applyPolicy { throw WebService::Cmis::NotImplementedException; }
+
+=item createRelationship()
+
+TODO: This is not yet implemented.
+
+=cut
+
 sub createRelationship { throw WebService::Cmis::NotImplementedException; }
+
+=item removePolicy()
+
+TODO: This is not yet implemented.
+
+=cut
+
 sub removePolicy { throw WebService::Cmis::NotImplementedException; }
 
 =back
