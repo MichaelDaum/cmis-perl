@@ -11,9 +11,9 @@ repository. All you have to tell WebService::Cmis is the repository's service
 URL and your credentials. There is nothing to install on the server side. 
 
 Note: this implementation is inspired by the Pyhton implementation
-L<http://code.google.com/p/cmislib> written by Jeff Potts.
+http://code.google.com/p/cmislib written by Jeff Potts.
 
-See the L<http://docs.oasis-open.org/cmis/CMIS/v1.0/cs01/cmis-spec-v1.0.html>
+See the http://docs.oasis-open.org/cmis/CMIS/v1.0/cs01/cmis-spec-v1.0.html
 for a full understanding of what CMIS is.
 
 
