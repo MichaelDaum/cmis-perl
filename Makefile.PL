@@ -3,7 +3,7 @@ use inc::Module::Install;
 name     'WebService-Cmis';
 all_from 'lib/WebService/Cmis.pm';
 author   q{Michael Daum <daum@michaeldaumconsulting.com>};
-license  'gpl';
+license  'perl';
 
 requires 'XML::LibXML' => 0;
 requires 'Error' => 0;

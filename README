@@ -10,12 +10,13 @@ WebService::Cmis uses the Restful AtomPub binding to communicate with the CMIS
 repository. All you have to tell WebService::Cmis is the repository's service
 URL and your credentials. There is nothing to install on the server side. 
 
-Note: this implementation is inspired by the Pyhton implementation
-http://code.google.com/p/cmislib written by Jeff Potts.
-
 See the http://docs.oasis-open.org/cmis/CMIS/v1.0/cs01/cmis-spec-v1.0.html
 for a full understanding of what CMIS is.
 
+ACKNOWLEDGEMENTS
+
+This implementation is inspired by the Pyhton implementation
+http://code.google.com/p/cmislib written by Jeff Potts.
 
 INSTALLATION
 
@@ -57,4 +58,3 @@ under the terms of either: the GNU General Public License as published
 by the Free Software Foundation; or the Artistic License.
 
 See http://dev.perl.org/licenses/ for more information.
-

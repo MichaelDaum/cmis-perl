@@ -59,11 +59,9 @@ sub getTargetId { throw WebService::Cmis::NotImplementedException; }
 
 =back
 
-=head1 AUTHOR
-
-Michael Daum C<< <daum@michaeldaumconsulting.com> >>
-
 =head1 COPYRIGHT AND LICENSE
+
+Copyright 2012 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.  See L<perlartistic>.
