@@ -28,7 +28,7 @@ our @ISA = ('WebService::Cmis::Object');
 Copyright 2012 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
-the same terms as Perl itself.  See L<perlartistic>.
+the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.
 
 =cut
 

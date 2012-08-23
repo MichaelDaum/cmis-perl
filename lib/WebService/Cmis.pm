@@ -2,14 +2,11 @@ package WebService::Cmis;
 
 use warnings;
 use strict;
+use v5.12.1;
 
 =head1 NAME
 
 WebService::Cmis - Perl interface to CMIS-compliant document management systems
-
-=cut
-
-our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
@@ -18,7 +15,7 @@ our $VERSION = '0.02';
     my $client = WebService::Cmis::getClient(
       url => "http://.../alfresco/service/cmis",
       user => "...",
-      password => "proxy"
+      password => "..."
     );
 
     my $repo = $client->getRepository;
@@ -37,7 +34,7 @@ WebService::Cmis uses the Restful AtomPub binding to communicate with the CMIS
 repository. All you have to tell WebService::Cmis is the repository's service
 URL and your credentials. There is nothing to install on the server side. 
 
-See the L<http://docs.oasis-open.org/cmis/CMIS/v1.0/cs01/cmis-spec-v1.0.html>
+See the F<http://docs.oasis-open.org/cmis/CMIS/v1.0/cs01/cmis-spec-v1.0.html>
 for a full understanding of what CMIS is.
 
 =head1 METHODS
@@ -51,6 +48,8 @@ use Exporter qw(import);
 
 use Carp;
 $Carp::Verbose = 1;
+
+our $VERSION = '0.02';
 
 our @ISA = qw(Exporter);
 
@@ -123,20 +122,10 @@ use constant CHECKED_OUT_COLL => 'checkedout';
 use constant UNFILED_COLL => 'unfiled';
 use constant ROOT_COLL => 'root';
 
-=item writeCmisDebug($msg)
+=item getClient(%args) -> L<WebService::Cmis::Client>
 
-static utility to write debug output to STDERR. Set the CMIS_DEBUG
-environment variable to switch on these messages.
-
-=cut
-
-sub writeCmisDebug {
-  print STDERR "WebService::Cmis - $_[0]\n" if $ENV{CMIS_DEBUG};
-}
-
-=item getClient(%args) -> $cmisClient
-
-static method to create a cmis client.
+static method to create a cmis client. The client serves as an agent to fulfill
+all operations while contacting the document management system. 
 
 =cut
 
@@ -145,12 +134,24 @@ sub getClient {
   return new WebService::Cmis::Client(@_);
 }
 
+=item writeCmisDebug($msg)
+
+static utility to write debug output to STDERR. Set the CMIS_DEBUG
+environment variable to switch on some additional debug messages.
+
+=cut
+
+sub writeCmisDebug {
+  print STDERR "WebService::Cmis - $_[0]\n" if $ENV{CMIS_DEBUG};
+}
+
+
 =back
 
 =head1 BUGS
 
 Please report any bugs or feature requests to C<bug-webservice-cmis at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=WebService-Cmis>.  I will be notified, and then you'll
+the web interface at F<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=WebService-Cmis>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
 
@@ -165,28 +166,28 @@ You can also look for information at:
 
 =over 4
 
-=item * RT: CPAN's request tracker
+=item * Github
 
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=WebService-Cmis>
+F<https://github.com/MichaelDaum/cmis-perl>
+
+=item * Meta CPAN
+
+F<https://metacpan.org/module/WebService::Cmis>
 
 =item * AnnoCPAN: Annotated CPAN documentation
 
-L<http://annocpan.org/dist/WebService-Cmis>
+F<http://annocpan.org/dist/WebService-Cmis>
 
 =item * CPAN Ratings
 
-L<http://cpanratings.perl.org/d/WebService-Cmis>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/WebService-Cmis/>
+F<http://cpanratings.perl.org/d/WebService-Cmis>
 
 =back
 
 =head1 ACKNOWLEDGEMENTS
 
 This implementation is inspired by the Pyhton implementation
-L<http://code.google.com/p/cmislib> written by Jeff Potts.
+F<http://code.google.com/p/cmislib> written by Jeff Potts.
 
 =head1 AUTHOR
 
@@ -197,7 +198,7 @@ Michael Daum C<< <daum@michaeldaumconsulting.com> >>
 Copyright 2012 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
-the same terms as Perl itself.  See L<perlartistic>.
+the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.
 
 =cut
 

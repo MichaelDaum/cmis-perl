@@ -1,0 +1,14 @@
+^Makefile$
+^MYMETA.yml$
+^blib/.*$
+^\.git/.*$
+^\.gitignore$
+^inc/cmis.cfg$
+^pm_to_blib$
+ignore.txt$
+\.perltidyrc$
+\.swp$
+\.old$
+\.tar.gz$
+\.bak$
+^WebService\-Cmis\-\d\.\d\d/

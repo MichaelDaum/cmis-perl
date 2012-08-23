@@ -197,8 +197,10 @@ sub getCapabilities {
     $this->{capabilities} = {};
     foreach my $node ($this->_xmlDoc->findnodes($CMIS_XPATH_CAPABILITIES)) {
        my $key = $node->localname;
-       my $val = WebService::Cmis::Property::Boolean->parse($node->string_value);
        $key =~ s/^capability//;
+
+       my $val = $node->string_value;
+       $val = WebService::Cmis::Property::Boolean->parse($val) if $val =~ /^(true|false)$/;
        $this->{capabilities}{$key} = $val;
     }
   }
@@ -1187,7 +1189,7 @@ Michael Daum C<< <daum@michaeldaumconsulting.com> >>
 Copyright 2012 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
-the same terms as Perl itself.  See L<perlartistic>.
+the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.
 
 =cut
 

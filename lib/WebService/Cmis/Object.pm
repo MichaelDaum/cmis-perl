@@ -278,9 +278,11 @@ sub getACL {
   require WebService::Cmis::ACL;
 
   my $url = $this->getLink(ACL_REL);
+  throw Error::Simple("Could not determine the object's ACL URL.") unless defined $url;
   #print STDERR "acl url = $url\n";
 
   my $result = $this->{repository}{client}->get($url);
+  #print STDERR "result=".$result->toString(2)."\n";
 
   return new WebService::Cmis::ACL(xmlDoc=>$result);
 }
@@ -313,7 +315,7 @@ sub getAppliedPolicies {
 
   my $url = $this->getLink(POLICIES_REL, @_);
   unless ($url) {
-     throw Error::Simple('could not determine policies URL'); # SMELL: use custom exception
+     throw Error::Simple('Could not determine policies URL'); # SMELL: use custom exception
   }
 
   my $result = $this->{repository}{client}->get($url, @_);
@@ -609,13 +611,30 @@ sub updateSummary {
   return $this;
 }
 
-=item applyACL()
+=item applyACL($acl)
 
-TODO: This is not yet implemented.
+Updates the object with the provided ACL
+
+See CMIS specification document 2.2.10.2 applyACL
 
 =cut
 
-sub applyACL { throw WebService::Cmis::NotImplementedException; }
+sub applyACL { 
+  my ($this, $acl) = @_;
+
+  unless ($this->{repository}->getCapabilities()->{'ACL'} eq 'manage') {
+    throw WebService::Cmis::NotSupportedException("This repository does not allow to manage ACLs"); 
+  }
+
+  my $url = $this->getLink(ACL_REL);
+  unless ($url) {
+     throw Error::Simple("Could not determine the object's ACL URL"); # SMELL: use custom exception
+  }
+
+  my $result = $this->{repository}{client}->put($url, $$acl->getXmlDoc, CMIS_ACL_TYPE);
+
+  return new WebService::Cmis::ACL(xmlDoc=>$result);
+}
 
 =item applyPolicy()
 
@@ -648,7 +667,7 @@ sub removePolicy { throw WebService::Cmis::NotImplementedException; }
 Copyright 2012 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
-the same terms as Perl itself.  See L<perlartistic>.
+the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.
 
 =cut
 

@@ -1,0 +1,105 @@
+This file contains message digests of all files listed in MANIFEST,
+signed via the Module::Signature module, version 0.68.
+
+To verify the content in this distribution, first make sure you have
+Module::Signature installed, then type:
+
+    % cpansign -v
+
+It will check each file's integrity, as well as the signature's
+validity.  If "==> Signature verified OK! <==" is not displayed,
+the distribution may already have been compromised, and you should
+not run its Makefile.PL or Build.PL.
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+SHA1 6a69b039a238a0272284e4c9ee7d1b29c4798218 Changes
+SHA1 b7725aa322a04f09f20980fd151d78f9babdd965 MANIFEST
+SHA1 970540450aa79cecea47d0d9f1ffc7dbae8b94be MANIFEST.SKIP
+SHA1 a7afe7cf166d8fcc3e294303b17c8fe76f3aa08b META.yml
+SHA1 50e0cd14fda078714029931def85f4f90e210ec5 Makefile.PL
+SHA1 ef01906c6da51f3d5224c49885ee83664feb5f8a README
+SHA1 8842ca38ce27ccf75e1ce8f5dfb93fa62d933b2e inc/Module/AutoInstall.pm
+SHA1 171ca38c5eedbe92d2f5eb1e14e1725631960bab inc/Module/Install.pm
+SHA1 96a9bb70b2243c1f4c00a8fa383a0e37822acd64 inc/Module/Install/AutoInstall.pm
+SHA1 6daffe6319ca8108cc3b0b0eaca26c67121e15de inc/Module/Install/Base.pm
+SHA1 4fba5930001ca62721cd7b2790f5cbe888e160f6 inc/Module/Install/Can.pm
+SHA1 9d374a00157befa504e6db14d83663875223e1ee inc/Module/Install/Fetch.pm
+SHA1 dcd214387ab49dc9b4c8a5100bed67a560fc6d49 inc/Module/Install/Include.pm
+SHA1 d170b3621ae4509969c61677aef41534dfa01a1e inc/Module/Install/Makefile.pm
+SHA1 ea2c6af29c2339be6fb78edf0924e6951eb40280 inc/Module/Install/Metadata.pm
+SHA1 d2e387590fc4bce3abb1a7282467cb57f6133884 inc/Module/Install/ReadmeFromPod.pm
+SHA1 121a3c95ebbbaea7b75df3ce7e922da7e6a0060f inc/Module/Install/Win32.pm
+SHA1 d9f0ea716ff81c7ae3fcaaf15cc03fb9bf4f01b1 inc/Module/Install/WriteAll.pm
+SHA1 5d38ac9ca97ea4005c173694f0c88d5ab2e53101 inc/WebService/Cmis/Test.pm
+SHA1 4ba5b44cc0313ec6a6f1326e2eead30966255c06 inc/WebService/Cmis/Test/ACE.pm
+SHA1 861531a83e7096ecd9910c5aa067d28ff1899334 inc/WebService/Cmis/Test/ACL.pm
+SHA1 be26e6757570ea724278f3581c35c80e90efa423 inc/WebService/Cmis/Test/AtomFeed.pm
+SHA1 174b3e05b64319257e762b6f7043bee185abd5b8 inc/WebService/Cmis/Test/Basics.pm
+SHA1 fb1dfc81891566ce01a866f86b8bc11a5673e0d6 inc/WebService/Cmis/Test/Client.pm
+SHA1 1ddc8554f8e67d4b7592382d811dc1e505264f6c inc/WebService/Cmis/Test/Document.pm
+SHA1 17cbd765372d036a6392ba21223cab15e62ad16d inc/WebService/Cmis/Test/Folder.pm
+SHA1 ef6e10ab5b48441c86ce774d46a7811beac19d28 inc/WebService/Cmis/Test/Object.pm
+SHA1 8271611f5c7f9b6e16ef5075353f3b22a72de906 inc/WebService/Cmis/Test/ObjectType.pm
+SHA1 748be64b3d0f2bd904dd45c0cc6e8bf79267cfa4 inc/WebService/Cmis/Test/Property.pm
+SHA1 76c1d2cb7a5d583a454bfd123f7daf704d0a665b inc/WebService/Cmis/Test/Repository.pm
+SHA1 bd79cb5ddd24ea83f831372236bd0b4d2c5b695e inc/cmis.cfg.example
+SHA1 c0c25495d2499d654df3048df82a657f102f1225 lib/WebService/Cmis.pm
+SHA1 af24457da5f91228065888f0076c309253120005 lib/WebService/Cmis/ACE.pm
+SHA1 87496b6038720fe072b0cebed86c06a9c8bc29fb lib/WebService/Cmis/ACL.pm
+SHA1 2af796adeabe731063cbb80db7a78fe5af09b5d2 lib/WebService/Cmis/AtomEntry.pm
+SHA1 031e73fdd0917fb80aead74a056481207334261c lib/WebService/Cmis/AtomFeed.pm
+SHA1 ebeb42dd96d6af869d4a6117f2d2c7b3b78187ec lib/WebService/Cmis/AtomFeed/ChangeEntries.pm
+SHA1 c7f71e6ea12cc31d9766f43171fd065b0c56f008 lib/WebService/Cmis/AtomFeed/ObjectTypes.pm
+SHA1 763a7699ea54f252113bbd4064f1a2dec6e501a1 lib/WebService/Cmis/AtomFeed/Objects.pm
+SHA1 ebc94df1e4391db57fa155cccc7d4e1ede5c2ea2 lib/WebService/Cmis/ChangeEntry.pm
+SHA1 65aff58097d99fe94efd90c18b2a204a39229b4e lib/WebService/Cmis/Client.pm
+SHA1 9fade0b15ddb6e59bef4e545aa6209d720ea9910 lib/WebService/Cmis/ClientException.pm
+SHA1 d90402cbff14682d6aba8cde295a3863eeb056dc lib/WebService/Cmis/Document.pm
+SHA1 dae8470db6d653c1a93ee0995321567d3a7da17c lib/WebService/Cmis/Folder.pm
+SHA1 0176e599600a66c8c69c586301ac76f04ee20932 lib/WebService/Cmis/NotImplementedException.pm
+SHA1 8604d5f35127e8d0c1163b642ddb1378300495a5 lib/WebService/Cmis/NotSupportedException.pm
+SHA1 71a71a83d6ee4df232ba100b41544dfb8ec10acd lib/WebService/Cmis/Object.pm
+SHA1 904152ba25a2c68ada254cfea15328886f45ef57 lib/WebService/Cmis/ObjectType.pm
+SHA1 2095f5ac8a4bfa1f3933ca48abdfc476c35664e0 lib/WebService/Cmis/Policy.pm
+SHA1 c51a48be716abb174ab1a2cb6779a0bafbf822ae lib/WebService/Cmis/Property.pm
+SHA1 8648c5969248ddfd64eb8fb188d563952c6eb65f lib/WebService/Cmis/Property/Boolean.pm
+SHA1 98d66419bbe391d73114237a00e775fa3e6536c1 lib/WebService/Cmis/Property/DateTime.pm
+SHA1 287bd149514d15ecf55967d5f5924a9d33df5b3f lib/WebService/Cmis/Property/Decimal.pm
+SHA1 c63615370d79339c2ed6a79dd66c9e04860648f9 lib/WebService/Cmis/Property/Id.pm
+SHA1 21204fff98f2de23dcf8beb103659526d31853fd lib/WebService/Cmis/Property/Integer.pm
+SHA1 5be26b9b80f667e94d98181ad51e1b46bd265f98 lib/WebService/Cmis/Property/String.pm
+SHA1 d46ffd703d68aadf949863d47db90dfa596e2b18 lib/WebService/Cmis/PropertyDefinition.pm
+SHA1 2985a371442c20e29d3b6745102c380d93e0300f lib/WebService/Cmis/Relationship.pm
+SHA1 ec3f53c5c148b24defc02df30685b974b7f1fc24 lib/WebService/Cmis/Repository.pm
+SHA1 4ac6c684725db0dea76600250c83a584921f9315 lib/WebService/Cmis/ServerException.pm
+SHA1 7087acf319a86f70d0cf4e59fe626d5635c5a034 t/00-load.t
+SHA1 3ec6171779122b0bdc69937c283be11b2a15dd89 t/00-signature.t
+SHA1 984b5f33ffec07df919dcf1206c8b07bc8d011c9 t/01-basics.t
+SHA1 366818de8e16f0b1bce345a7c40319aa97c5a887 t/02-client.t
+SHA1 f3d60c55fec1713229ce51d1a82a63baacd44bdc t/03-object.t
+SHA1 392b9803316a0697a2b85c847e007183374f2616 t/04-atom-feed.t
+SHA1 1eb748a458cda15a8aaf8bf72749407e9c90aef2 t/05-object-type.t
+SHA1 2e15c7f543734f14928049cde1910ae65e233f57 t/06-property.t
+SHA1 30c21288a348762900589951147939aa6bd7e8a2 t/07-repository.t
+SHA1 ad47f119960a588c55a6e6310cccb8ce799c3a5b t/08-acl.t
+SHA1 ad678e354970a4d3165329c24f40fe9cc97f57b9 t/09-folder.t
+SHA1 cc60a75013c07fb9d325c31d96224fced94e6df4 t/10-document.t
+SHA1 291961c62a67e365d66bf639b63348845b6e5a77 t/11-ace.t
+SHA1 6afebf9bf4633b597581df7eba84c3e6a784f8c7 t/boilerplate.t
+SHA1 91734810f49f6125878087d9da7bd746a8ab46d7 t/data/free.jpg
+SHA1 6c552c2ecff38e96b59d5f50fb5fded8c56a76e4 t/manifest.t
+SHA1 0b1c5a2d59be6bfa7d60c64cd964fea6a0331705 t/pod-coverage.t
+SHA1 640935336dc1123c0069bcf5432bcaedc2cf22d3 t/pod.t
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQEcBAEBAgAGBQJQNg+aAAoJEFbHzikUeAidE+YH/0B21SQ6Sw2QvzmLSn7xoMto
+Tr0Y2G9+/cdfVaSHXRon4IWR30lHwjNRrZlEl/5XaIkXJLQWD5RtH6vj51GVMRPe
+Km3dx942BjQPJu/cttidMH1Ut93YulruU9P5V7xI5GBEejqJjbf2wAVrVbULlctm
+vsGviqqx4BckHsnNnm2212nk7uTiVwyRAZ14tVe09UEPUuSfvbj6VWkMreoRftBR
+L9Ebp0Gz05x2EeIoVWDvaHinpN4XujcrbE9HNTJIqpLQX9I+gouNMPJ55To0ijbQ
+piYIPUKiSlVfxF/eYW7UAIxYlT+DpfqDStjbhkkPhO9KiTooPnIWO0QBm5moKrE=
+=nrpT
+-----END PGP SIGNATURE-----

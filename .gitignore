@@ -1,8 +1,10 @@
 *.swp
 Makefile
 blib/
-inc/
 pm_to_blib
 MYMETA.yml
+cmis.cfg
 *tar.gz
 *.old
+WebService-Cmis-*
+*.bak

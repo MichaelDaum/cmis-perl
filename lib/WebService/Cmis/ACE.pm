@@ -29,7 +29,7 @@ sub new {
   my $this = bless({ @_ }, $class);
 
   unless (ref($this->{permissions})) {
-    $this->{permission} = [$this->{permissions}];
+    $this->{permissions} = [$this->{permissions}];
   }
 
   return $this;
@@ -45,7 +45,7 @@ sub toString {
   my $this = shift;
 
   my $result = $this->{principalId}." is allowed to ";
-  $result .= $_ foreach @{$this->{permissions}};
+  $result .= $_ foreach sort @{$this->{permissions}};
   $result .= " (direct=".$this->{direct}.")";
 }
 
@@ -56,7 +56,7 @@ sub toString {
 Copyright 2012 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
-the same terms as Perl itself.  See L<perlartistic>.
+the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.
 
 =cut
 

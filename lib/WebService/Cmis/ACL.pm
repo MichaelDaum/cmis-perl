@@ -35,6 +35,7 @@ sub new {
   if (defined $this->{xmlDoc}) {
     $this->{entries} = $this->_getEntriesFromXml();
   }
+  $this->{entries} = [] unless defined $this->{entries};
   
   return $this;
 }
@@ -78,19 +79,41 @@ adds an ACE entry to the ACL.
 sub addEntry {
   my ($this, $ace) = @_;
 
-  $this->{entries}{$ace->{principalId}} = $ace;
+  push @{$this->{entries}}, $ace;
 }
 
-=item removeEntry($principalId) -> $ace;
+=item removeEntry($idOrAce) -> $boolean
 
-removes the ACE entry given a specific principalId.
+removes all specified entries. $idOrAce can either
+be a principalId or an ACE object. In the first case
+all ACEs for the principalId will be removed. When
+an ACE object is specified, all equivalent ACEs in
+the ACL will be removed.
 
 =cut
 
 sub removeEntry {
-  my ($this, $principalId) = @_;
+  my ($this, $idOrAce) = @_;
 
-  return delete $this->{entries}{$principalId};
+  return unless $this->{entries};
+  
+  my @newEntries = ();
+
+  if (ref($idOrAce)) {
+    my $testAce = $idOrAce;
+    foreach my $ace (@{$this->{entries}}) {
+      push @newEntries, $ace unless $ace->toString eq $testAce->toString;
+    }
+  } else {
+    my $principalId = $idOrAce;
+
+    foreach my $ace (@{$this->{entries}}) {
+      push @newEntries, $ace unless $ace->{principalId} eq $principalId;
+    }
+  }
+
+  $this->{entries} = \@newEntries;
+
 }
 
 =item getEntries -> @aces
@@ -189,7 +212,7 @@ sub getXmlDoc {
 Copyright 2012 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
-the same terms as Perl itself.  See L<perlartistic>.
+the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.
 
 =cut
 
