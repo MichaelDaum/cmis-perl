@@ -615,6 +615,17 @@ sub updateSummary {
 
 Updates the object with the provided ACL
 
+  my $obj = $repo->getObject($id);
+  my $acl = $obj->getACL->addEntry(
+    new WebService::Cmis::ACE(
+      principalId => 'jdoe',
+      permissions => ['cmis:write', 'cmis:read'],
+      direct => 'true',
+    )
+  );
+  my $newAcl => $obj->applyACL($acl);
+
+
 See CMIS specification document 2.2.10.2 applyACL
 
 =cut
@@ -630,8 +641,13 @@ sub applyACL {
   unless ($url) {
      throw Error::Simple("Could not determine the object's ACL URL"); # SMELL: use custom exception
   }
+#print STDERR "url=$url\n";
+#print STDERR "acl=".$acl->getXmlDoc
 
-  my $result = $this->{repository}{client}->put($url, $$acl->getXmlDoc, CMIS_ACL_TYPE);
+  my $xmlDoc = $acl->getXmlDoc;
+
+  my $result = $this->{repository}{client}->put($url, $xmlDoc->toString, CMIS_ACL_TYPE);
+  #print STDERR "result=".$result->toString(1)."\n";
 
   return new WebService::Cmis::ACL(xmlDoc=>$result);
 }

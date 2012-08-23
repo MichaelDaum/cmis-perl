@@ -21,6 +21,12 @@ use warnings;
 
 =item new(I<%args>)
 
+  my $ace = new WebService::Cmis::ACE(
+    principalId => 'jdoe',
+    permissions => ['cmis:write'],
+    direct => 'true',
+  );
+
 =cut
 
 sub new {

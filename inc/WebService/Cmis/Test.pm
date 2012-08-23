@@ -37,8 +37,6 @@ sub new {
 sub DESTROY {
   my $this = shift;
 
-  note("DESTROY");
-
   foreach my $key (keys %{$this->{testDocuments}}) {
     $this->deleteTestDocument($key);
   }

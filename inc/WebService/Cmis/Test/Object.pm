@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use WebService::Cmis qw(:collections :utils :relations :namespaces :contenttypes);
+use WebService::Cmis::ACE;
 use Error qw(:try);
 
 sub test_Object_getProperties : Tests {
@@ -488,6 +489,103 @@ sub test_Object_updateSummary : Test(4) {
   is($text, $summary2);
   isnt($updated1, $updated2);
   isnt($summary1, $summary2);
+}
+
+
+sub test_Object_applyACL : Test(11) {
+  my $this = shift;
+
+  my $obj = $this->getTestFolder;
+
+  my $acl = $obj->getACL;
+  ok(defined $acl);
+  my $origSize = $acl->getSize;
+  note("1: our ACL has got $origSize ACEs");
+  #note("1: acl=".$acl->toString);
+
+  my $ace = new WebService::Cmis::ACE(principalId => 'jdoe', permissions => 'cmis:write', direct => 'true');
+  $acl->addEntry($ace);
+
+  note("2: after adding one ACE we have ".($origSize+1)." ACEs");
+  #note("2: acl=".$acl->toString);
+  is($acl->getSize, $origSize+1);
+
+  my $returnAcl = $obj->applyACL($acl);
+  my $returnSize = $returnAcl->getSize;
+  ok(defined $returnAcl);
+  note("3: applying the ACL we get $returnSize ACEs in return ... could be more than one on plus.");
+  #note("3: acl=".$returnAcl->toString);
+  ok($returnSize >= $origSize+1);
+
+  my $againAcl = $obj->getACL;
+  my $againSize = $againAcl->getSize;
+  note("4: getting a fresh ACL from the object has got $againSize ACEs.");
+  ok(defined $againAcl);
+  is($againSize, $returnSize);
+  is($againAcl->toString, $returnAcl->toString);
+
+  $againAcl->removeEntry("jdoe");
+  $againSize = $againAcl->getSize;
+  note("5: removing all ACEs for jdoe leaves us with $againSize");
+  is($againSize, $origSize);
+
+  $returnAcl = $obj->applyACL($againAcl);
+  $returnSize = $returnAcl->getSize;
+  ok(defined $returnAcl);
+  is($returnSize, $againSize);
+  is($returnAcl->toString, $againAcl->toString);
+}
+
+sub test_Object_applyACL_same : Tests {
+  my $this = shift;
+
+  my $obj = $this->getTestFolder;
+  my $acl = $obj->getACL;
+
+  ok(defined $acl);
+  my $origSize = $acl->getSize;
+  note("1: our ACL has got $origSize ACEs");
+  ok($origSize > 0);
+  #note("1: acl=".$acl->toString);
+
+  $acl->addEntry(new WebService::Cmis::ACE(
+    principalId => 'jdoe', 
+    permissions => 'cmis:write', 
+    direct => 'true'
+  ));
+  my $size = $acl->getSize;
+  note("2: our ACL has got $size ACEs now");
+  is($size, $origSize+1);
+  #note("2: acl=".$acl->toString);
+
+  # adding the same again
+  $acl->addEntry(new WebService::Cmis::ACE(
+    principalId => 'jdoe', 
+    permissions => 'cmis:write', 
+    direct => 'true'
+  ));
+  my $size = $acl->getSize;
+  note("3: our ACL has got $size ACEs now");
+  is($size, $origSize+2);
+
+  # adding the same again
+  $acl->addEntry(new WebService::Cmis::ACE(
+    principalId => 'jdoe', 
+    permissions => 'cmis:write', 
+    direct => 'true'
+  ));
+  my $size = $acl->getSize;
+  note("4: our ACL has got $size ACEs now");
+  is($size, $origSize+3);
+
+  note("before acl=".$acl->toString);
+
+  my $returnAcl = $obj->applyACL($acl);
+  my $returnSize = $returnAcl->getSize;
+  note("4: the returned ACL has got $returnSize ACEs");
+  ok($returnSize < $size);
+  note("after acl=".$returnAcl->toString);
+  note($returnAcl->getXmlDoc->toString(1));
 }
 
 1;

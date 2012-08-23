@@ -70,9 +70,21 @@ sub toString {
   return join("\n", @result);
 }
 
-=item addEntry($ace)
+=item getSize() -> $number
 
-adds an ACE entry to the ACL.
+returns the number of ACE objects part of this list
+
+=cut
+
+sub getSize {
+  my $this = shift;
+
+  return scalar(@{$this->{entries}});
+}
+
+=item addEntry($ace) -> L<WebService::Cmis::ACL>
+
+adds an ACE entry to the ACL. returns $this object.
 
 =cut
 
@@ -80,15 +92,16 @@ sub addEntry {
   my ($this, $ace) = @_;
 
   push @{$this->{entries}}, $ace;
+
+  return $this;
 }
 
-=item removeEntry($idOrAce) -> $boolean
+=item removeEntry($idOrAce) -> L<WebService::Cmis::ACL>
 
-removes all specified entries. $idOrAce can either
-be a principalId or an ACE object. In the first case
-all ACEs for the principalId will be removed. When
-an ACE object is specified, all equivalent ACEs in
-the ACL will be removed.
+removes all specified entries. C<$idOrAce> can either be a principalId or an
+ACE object. In the first case all ACEs for the principalId will be removed.
+When an ACE object is specified, all equivalent ACEs in the ACL will be
+removed. returns $this object.
 
 =cut
 
@@ -101,9 +114,12 @@ sub removeEntry {
 
   if (ref($idOrAce)) {
     my $testAce = $idOrAce;
+    my $testAceString = $testAce->toString;
+
     foreach my $ace (@{$this->{entries}}) {
-      push @newEntries, $ace unless $ace->toString eq $testAce->toString;
+      push @newEntries, $ace unless $ace->toString eq $testAceString;
     }
+
   } else {
     my $principalId = $idOrAce;
 
@@ -114,6 +130,7 @@ sub removeEntry {
 
   $this->{entries} = \@newEntries;
 
+  return $this;
 }
 
 =item getEntries -> @aces
@@ -173,7 +190,7 @@ XML Document.
 sub getXmlDoc {
   my $this = shift;
 
-  return unless defined $this->{entries} && scalar(@{$this->{entries}});
+  return unless defined $this->{entries} && $this->getSize;
 
   my $xmlDoc = new XML::LibXML::Document('1.0', 'UTF-8');
 
