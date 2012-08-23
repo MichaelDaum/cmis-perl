@@ -30,7 +30,7 @@ $WebService::Cmis{Connections} = {
     password => "exo",
   }, 
   xcmis_org => {
-    url => "http://xcmis.org/xcmis1/rest/cmisatom",
+    url => "http://xcmis.org/xcmis/rest/cmisatom",
     user => "root",
     password => "exo",
   }
