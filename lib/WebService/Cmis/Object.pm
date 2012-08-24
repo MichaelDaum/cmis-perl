@@ -37,9 +37,6 @@ use WebService::Cmis::AtomEntry ();
 our @ISA = qw(WebService::Cmis::AtomEntry);
 
 our %classOfBaseTypeId = (
-  'F:st:sites' => 'WebService::Cmis::Folder', # SMELL: specific to alfresco
-  'F:st:site' => 'WebService::Cmis::Folder', 
-
   'cmis:folder' => 'WebService::Cmis::Folder',
   'cmis:document' => 'WebService::Cmis::Document',
   'cmis:relationship' => 'WebService::Cmis::Relationship',
