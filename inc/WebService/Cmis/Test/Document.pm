@@ -33,7 +33,6 @@ sub _saveFile {
 }
 
 
-
 sub test_Document_getAllVersions : Tests {
   my $this = shift;
   my $repo = $this->getRepository;
@@ -106,56 +105,7 @@ sub test_Document_checkOut_checkIn : Test(6) {
   ok(!defined $pwc) or diag("there shouldn't be a private working copy anymore as the document has been checked in");
 }
 
-sub test_Document_getRenditionProperties : Tests {
-  my $this = shift;
 
-  my $repo = $this->getRepository;
-  my $obj = $this->getTestDocument;
-
-  my $renditionInfo = $obj->getRenditionInfo;
-  ok(defined $renditionInfo);
-  note("renditionInfo:");
-  foreach my $rendition (values %$renditionInfo) {
-    ok(defined $rendition->{streamId});
-    ok(defined $rendition->{kind});
-    note("streamId=$rendition->{streamId}");
-    foreach my $key (keys %$rendition) {
-      next if $key eq 'streamId';
-      ok(defined $rendition->{$key});
-      note("   $key=$rendition->{$key}");
-    }
-  }
-}
-
-sub test_Document_getRenditionLink : Test(5) {
-  my $this = shift;
-
-  my $obj = $this->getTestDocument;
-
-  my $link = $obj->getRenditionLink(kind=>"thumbnail");
-  # Hm, ...
-  #ok(defined $link);
-  #note("thumbnail=$link");
-
-  $link = $obj->getRenditionLink(mimetype=>"Image");
-  ok(defined $link);
-  note("image=$link");
-
-  $link = $obj->getRenditionLink(mimetype=>"Image", width=>16);
-  ok(defined $link);
-  note("image,16=$link");
-
-  $link = $obj->getRenditionLink(mimetype=>"Image", width=>32);
-  ok(defined $link);
-  note("image,32=$link");
-
-  $link = $obj->getRenditionLink(kind=>"icon", height=>16);
-  ok(defined $link);
-  note("icon=$link");
-
-  $link = $obj->getRenditionLink(kind=>"icon", height=>11234020);
-  ok(!defined $link);
-}
 
 sub test_Document_getContentStream : Test(2) {
   my $this = shift;
@@ -310,4 +260,54 @@ sub test_Document_unfile : Tests {
   }
 }
 
+sub test_Document_getRenditions : Tests {
+  my $this = shift;
+
+  my $obj = $this->getTestDocument;
+
+  my $renditions = $obj->getRenditions;
+  ok(defined $renditions);
+  note("renditions:");
+  foreach my $rendition (values %$renditions) {
+    ok(defined $rendition);
+    note("rendition properties:".join(", ", sort keys %$rendition));
+    ok(defined $rendition->{streamId});
+    ok(defined $rendition->{mimetype});
+    ok(defined $rendition->{kind});
+    my @info = ();
+    foreach my $key (keys %$rendition) {
+      push @info, "   $key=$rendition->{$key}";
+    }
+    note(join("\n", @info));
+  }
+}
+
+sub test_Document_getRenditionLink : Test(5) {
+  my $this = shift;
+
+  my $obj = $this->getTestDocument;
+  my $link = $obj->getRenditionLink(kind=>"thumbnail");
+  #the server might delay thumbnail creation beyond this test
+  #ok(defined $link);
+  #note("thumbnail=$link");
+
+  $link = $obj->getRenditionLink(mimetype=>"Image");
+  ok(defined $link);
+  note("image=$link");
+
+  $link = $obj->getRenditionLink(mimetype=>"Image", width=>16);
+  ok(defined $link);
+  note("image,16=$link");
+
+  $link = $obj->getRenditionLink(mimetype=>"Image", width=>32);
+  ok(defined $link);
+  note("image,32=$link");
+
+  $link = $obj->getRenditionLink(kind=>"icon", height=>16);
+  ok(defined $link);
+  note("icon=$link");
+
+  $link = $obj->getRenditionLink(kind=>"icon", height=>11234020);
+  ok(!defined $link);
+}
 1;

@@ -564,7 +564,7 @@ sub test_Object_applyACL_same : Tests {
     permissions => 'cmis:write', 
     direct => 'true'
   ));
-  my $size = $acl->getSize;
+  $size = $acl->getSize;
   note("3: our ACL has got $size ACEs now");
   is($size, $origSize+2);
 
@@ -574,7 +574,7 @@ sub test_Object_applyACL_same : Tests {
     permissions => 'cmis:write', 
     direct => 'true'
   ));
-  my $size = $acl->getSize;
+  $size = $acl->getSize;
   note("4: our ACL has got $size ACEs now");
   is($size, $origSize+3);
 

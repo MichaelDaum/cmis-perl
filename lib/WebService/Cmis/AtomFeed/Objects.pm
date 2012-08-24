@@ -2,18 +2,19 @@ package WebService::Cmis::AtomFeed::Objects;
 
 =head1 NAME
 
-WebService::Cmis::AtomFeed::Objects
-
-=head1 SYNOPSIS
-
-This is a Result sets representing an atom feed of CMIS Objects.
+WebService::Cmis::AtomFeed::Objects - a set of CMIS objects
 
 =head1 DESCRIPTION
+
+This is a result sets representing an atom feed of L<CMIS Objects|WebService::Cmis::Object>.
+
+Parent-class: L<WebService::Cmis::AtomFeed>
 
 =cut
 
 use strict;
 use warnings;
+
 use WebService::Cmis::AtomFeed ();
 use WebService::Cmis::Object ();
 
@@ -34,7 +35,7 @@ sub newEntry {
 
   #print STDERR "### creating Obect from\n".$xmlDoc->toString(1)."\n###\n";
   return unless defined $xmlDoc;
-  return new WebService::Cmis::Object::(repository=>$this->{repository}, xmlDoc=>$xmlDoc);
+  return new WebService::Cmis::Object(repository=>$this->{repository}, xmlDoc=>$xmlDoc);
 }
 
 =back

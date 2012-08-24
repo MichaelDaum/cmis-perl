@@ -50,15 +50,19 @@ sub getClient {
   my $this = shift;
 
   unless (defined $this->{client}) {
-    my $tempDir = File::Temp::tempdir(CLEANUP => 1);
-    note("temporary cache in $tempDir");
-    my $cache = Cache::FileCache->new({
-      cache_root => $tempDir
-      }
-    );
+    my $cache;
+    if ($this->{cacheEnabled}) {
+      my $tempDir = File::Temp::tempdir(CLEANUP => 1);
+      note("temporary cache in $tempDir");
+      my $cache = Cache::FileCache->new({
+        cache_root => $tempDir
+        }
+      );
+    }
+
     $this->{client} = WebService::Cmis::getClient(
       %{$this->{config}},
-      #cache => $cache
+      cache => $cache
     );
   }
 

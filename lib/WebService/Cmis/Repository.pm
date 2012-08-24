@@ -2,13 +2,14 @@ package WebService::Cmis::Repository;
 
 =head1 NAME
 
-WebService::Cmis::Repository
-
-Representation of a cmis repository
-
-=head1 SYNOPSIS
+WebService::Cmis::Repository - Representation of a cmis repository
 
 =head1 DESCRIPTION
+
+After fetching a L<WebService::Cmis::Client> object, fetching the
+repository is the next thing to do in most cases using L<WebService::Cmis::Client/getRepository>.
+
+  my $repo = WebService::Cmis::getClient->getRepository('repositoryId');
 
 =cut
 
@@ -35,20 +36,19 @@ our $CMIS_XPATH_COLLECTION = new XML::LibXML::XPathExpression('./*[local-name() 
 
 =over 4
 
-=item new(I<%args>)
+=item new($client, $xmlDoc)
 
-Create a new WebService::Cmis::Client object. This requires
-a url of the webservice api, as well as a user and password
-for authentication.
+Create a new repository object using the given $client and loading
+the information stored in the $xmlDoc.
 
 =cut
 
 sub new {
-  my ($class, $client, $node) = @_;
+  my ($class, $client, $xmlDoc) = @_;
 
   my $this = bless({
     client => $client,
-    xmlDoc => $node,
+    xmlDoc => $xmlDoc,
   }, $class);
 
   $this->_initData;
@@ -56,20 +56,17 @@ sub new {
   return $this;
 }
 
-=item client
+=item getClient() -> L<WebService::Cmis::Client>
 
-getter for the client object
+returns the the client object used to communicate with the repository.
 
 =cut
 
-sub client {
+sub getClient {
   return $_[0]->{client};
 }
 
-=item _initData()
-
-=cut
-
+# internal function to reset cached data
 sub _initData {
   my $this = shift;
 
@@ -130,17 +127,11 @@ sub reload {
   $this->_initData;
 }
 
-=item _xmlDoc
-
-internal helper to make sure the xmlDoc is loaded
-
-=cut
-
+#internal helper to make sure the xmlDoc is loaded
 sub _xmlDoc {
   $_[0]->reload unless defined $_[0]->{xmlDoc};
   return $_[0]->{xmlDoc};
 }
-
 
 =item getRepositoryId()
 
@@ -496,6 +487,27 @@ sub getLink {
 
 returns an object given the path to the object.
 
+  my $doc = $repo->getObjectByPath("/User homes/jeff/sample.pdf");
+  my $title = $doc->getTitle();
+
+These optional arguments are supported:
+
+=over 4
+
+=item filter: See section 2.2.1.2.1 Properties.
+
+=item includeAllowableActions: See section 2.2.1.2.6 Allowable Actions. 
+
+=item includeRelationships: See section 2.2.1.2.2 Relationships.
+
+=item renditionFilter: See section 2.2.1.2.4 Renditions.
+
+=item includePolicyIds: See section 2.2.1.2.2 Relationships.
+
+=item includeACL: See section 2.2.1.2.5 ACLs.
+
+=back
+
 See CMIS specification document 2.2.4.9 getObjectByPath
 
 =cut
@@ -573,13 +585,22 @@ These optional arguments are supported:
 =over 4
 
 =item folderId
+
 =item maxItems
+
 =item skipCount
+
 =item orderBy
+
 =item filter
+
 =item includeRelationships
+
 =item renditionFilter
+
 =item includeAllowableActions
+
+=back
 
 =cut
 
@@ -594,15 +615,23 @@ returns a AtomFeed of cmis objects that
 are currently unfiled.
 
 These optional arguments are supported:
+
 =over 4
 
 =item folderId
+
 =item maxItems
+
 =item skipCount
+
 =item orderBy
+
 =item filter
+
 =item includeRelationships
+
 =item renditionFilter
+
 =item includeAllowableActions
 
 =back
@@ -841,7 +870,9 @@ These optional arguments are current supported:
 =over 4
 
 =item includePropertyDefinitions
+
 =item maxItems
+
 =item skipCount
 
 =back
@@ -887,6 +918,7 @@ These optional arguments are supported:
 =over 4
 
 =item depth
+
 =item includePropertyDefinitions
 
 =back
@@ -941,10 +973,15 @@ The following optional arguments are supported:
 =over 4
 
 =item searchAllVersions
+
 =item includeRelationships
+
 =item renditionFilter
+
 =item includeAllowableActions
+
 =item maxItems
+
 =item skipCount
 
 =back
@@ -970,13 +1007,7 @@ sub query {
   return new WebService::Cmis::AtomFeed::Objects(repository=>$this, xmlDoc=>$result);
 }
 
-=item _getQueryXmlDoc($statement, %params) -> $queryXmlDoc
-
-Utility method that knows how to build CMIS query xml around the
-specified query statement.
-
-=cut
-
+# Utility method that knows how to build CMIS query xml around the specified query statement.
 sub _getQueryXmlDoc {
   my $this = shift;
   my $statement = shift;
@@ -1014,9 +1045,13 @@ The following optional arguments are supported:
 =over 4
 
 =item changeLogToken
+
 =item includeProperties
+
 =item includePolicyIDs
+
 =item includeACL
+
 =item maxItems
 
 =back

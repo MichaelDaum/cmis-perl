@@ -2,13 +2,29 @@ package WebService::Cmis::Client;
 
 =head1 NAME
 
-WebService::Cmis::Client
-
-=head1 SYNOPSIS
-
-Transport layer
+WebService::Cmis::Client - Transport layer
 
 =head1 DESCRIPTION
+
+This is the workhorse communicating with the document manangement server
+by connecting to the REST service. It provides the initial access function
+to the L<repositories|WebService::Cmis::Repository>.
+
+  use Cache::FileCache ();
+
+  my $client = WebService::Cmis::getClient(
+      url => "http://cmis.alfresco.com/service/cmis",
+      user => "admin",
+      password => "admin",
+      cache => new Cache::FileCache({
+        cache_root => "/tmp/cmis_client"
+      }
+    )
+  );
+
+  my $repo = $client->getRepository;
+
+Parent class: L<REST::Client>
 
 =cut
 
@@ -34,40 +50,54 @@ our @ISA = qw(REST::Client);
 
 =over 4
 
-=item new(I<%args>)
+=item new(%params)
 
 Create a new WebService::Cmis::Client object. This requires
 a url of the webservice api, as well as a user and password
 for authentication.
 
+Parameters:
+
+=over 4
+
+=item * user
+
+=item * password
+
+=item * url
+
+=item * cache
+
+=item * useragent
+
+=item * follow
+
+=back
+
+See L<REST::Client> for more options.
+
 =cut
 
 sub new {
-  my ($class, %args) = @_;
+  my ($class, %params) = @_;
 
-  my $password = delete $args{password};
-  my $user = delete $args{user};
-  my $repositoryUrl = delete $args{url} || '';
-  my $cache = delete $args{cache};
+  my $password = delete $params{password};
+  my $user = delete $params{user};
+  my $repositoryUrl = delete $params{url} || '';
+  my $cache = delete $params{cache};
 
   if (defined $password && defined $user) {
-    $args{useragent} = new BasicAuthAgent($user, $password);  
-    $args{follow} = 1;
+    $params{useragent} = new BasicAuthAgent($user, $password);  
+    $params{follow} = 1;
   }
 
-  my $this = $class->SUPER::new(%args);
+  my $this = $class->SUPER::new(%params);
 
   $this->{cache} = $cache;
   $this->{repositoryUrl} = $repositoryUrl;
 
   return $this;
 }
-
-=item DESTROY
-
-custom destructor
-
-=cut
 
 sub DESTROY {
   my $this = shift;
@@ -178,7 +208,7 @@ sub _cacheKey {
   return _untaint(Digest::MD5::md5_hex(Data::Dumper::Dumper($_[0])));
 }
 
-=item get(I<$path>) 
+=item get($path) 
 
 does a get against the CMIS service. More than likely, you will not
 need to call this method. Instead, let the other objects to it for you.
@@ -256,6 +286,7 @@ sub request {
   my $code = $this->responseCode;
   
   my $cacheControl = $this->{_res}->header("Cache-Control") || '';
+  writeCmisDebug("cacheControl = $cacheControl");
   if ($cacheControl ne 'no-cache' && $code >= 200 && $code < 300 && $this->{cache}) {
     my $cacheEntry = {
       content => $this->{_res}->content,
@@ -369,7 +400,7 @@ sub post {
   $this->processErrors;
 }
 
-=item put($path, $payload, $contentType, %args) 
+=item put($path, $payload, $contentType, %params) 
 
 does a put against the CMIS service. More than likely, you will not
 need to call this method. Instead, let the other objects to it for you.
@@ -460,10 +491,10 @@ sub processErrors {
   throw Error::Simple("unknown client error $code: ".$this->responseStatusLine);
 }
 
-=item getRepositories -> %repositories;
+=item getRepositories() -> %repositories;
 
-returns a hash of WebService::Cmis::Repository objects
-available at this service
+returns a hash of L<WebService::Cmis::Repository> objects available at this
+service. 
 
 =cut
 
@@ -488,7 +519,7 @@ sub getRepositories {
   return $this->{repositories};
 }
 
-=item getRepository($id) -> $repository
+=item getRepository($id) -> L<$repository|WebService::Cmis::Repository>
 
 returns a WebService::Cmis::Repository of the given ID. if
 ID is undefined the default repository will be returned.

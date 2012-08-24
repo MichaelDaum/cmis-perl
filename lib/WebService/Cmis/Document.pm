@@ -2,13 +2,16 @@ package WebService::Cmis::Document;
 
 =head1 NAME
 
-WebService::Cmis::Object
-
-Representation of a cmis object
-
-=head1 SYNOPSIS
+WebService::Cmis::Document - Representation of a cmis document
 
 =head1 DESCRIPTION
+
+Document objects are the elementary information entities managed by the repository.
+This class represents a document object as returned by a L<WebService::Cmis::Repository/getObject>.
+
+See CMIS specification document 2.1.4 Document Object
+
+Parent class: L<WebService::Cmis::Object>
 
 =cut
 
@@ -29,7 +32,17 @@ our $CMIS_XPATH_RENDITIONS = new XML::LibXML::XPathExpression('./*[local-name()=
 
 =over 4
 
-=item checkOut -> $document
+=cut
+
+# clear document-specific caches
+sub _initData {
+  my $this = shift;
+
+  $this->SUPER::_initData();
+  undef $this->{renditions};
+}
+
+=item checkOut() -> L<$document|WebService::Cmis::Document>
 
 performs a checkOut on this document and returns the
 Private Working Copy (PWC), which is also an instance of
@@ -72,7 +85,7 @@ sub checkOut {
   return new WebService::Cmis::Document(repository=>$this->{repository}, xmlDoc=>$result);
 }
 
-=item isCheckedOut
+=item isCheckedOut() -> $boolean
 
 Returns true if the document is checked out.
 
@@ -90,7 +103,7 @@ sub isCheckedOut {
 }
 
 
-=item getCheckedOutBy -> $userId
+=item getCheckedOutBy() -> $userId
 
 returns the ID who currently has the document checked out.
 
@@ -107,7 +120,7 @@ sub getCheckedOutBy {
   return $prop->getValue;
 }
 
-=item getPrivateWorkingCopy -> $cmisDocument
+=item getPrivateWorkingCopy() -> L<$cmisDocument|WebService::Cmis::Document>
 
 retrieves the object using the object ID in the property:
 cmis:versionSeriesCheckedOutId then uses getObject to instantiate
@@ -127,7 +140,7 @@ sub getPrivateWorkingCopy {
   return $this->{repository}->getObject($pwcDocId);
 }
 
-=item cancelCheckOut
+=item cancelCheckOut() -> L<$this|WebService::Cmis::Document>
 
 cancels the checkout of this object by retrieving the Private Working
 Copy (PWC) and then deleting it. After the PWC is deleted, this object
@@ -148,7 +161,7 @@ sub cancelCheckOut {
   return $this;
 }
 
-=item checkIn($checkinComment, %params) -> $document
+=item checkIn($checkinComment, %params) -> L<$document|WebService::Cmis::Document>
 
 checks in this Document which must be a private
 working copy (PWC).
@@ -159,12 +172,17 @@ The following optional arguments are supported:
 
 =over 4
 
-=item major
-=item properties
-=item contentStream
-=item policies
-=item addACEs
-=item removeACEs
+=item * major
+
+=item * properties
+
+=item * contentStream
+
+=item * policies
+
+=item * addACEs
+
+=item * removeACEs
 
 =back
 
@@ -232,33 +250,31 @@ sub _urlEncode {
   return $text;
 }
 
-=item getContentStream
+=item getContentStream($streamId) -> $data
 
 returns the CMIS service response from invoking the 'enclosure' link.
+it will return the binary content of the document stored on the server.
 
 The optional argument:
 
 =over 4
 
-=item streamId: id of the content rendition
+=item * streamId: id of the content rendition (TODO: not implemented yet)
 
 =back
 
 See CMIS specification document 2.2.4.10 getContentStream
 
->>> doc.getName()
-u'sample-b.pdf'
->>> o = open('tmp.pdf', 'wb')
->>> result = doc.getContentStream()
->>> o.write(result.read())
->>> result.close()
->>> o.close()
->>> import os.path
->>> os.path.getsize('tmp.pdf')
-117248
+  my $doc = $repo->getObjectByPath("/User homes/jeff/sample.pdf");
+  my $content = $doc->getContentStream;
 
+  my $FILE;
+  unless (open($FILE, '>', $name)) {
+    die "Can't create file $name - $!\n";
+  }
+  print $FILE $text;
+  close($FILE);
 
-# TODO: Need to implement the streamId
 
 =cut
 
@@ -312,53 +328,69 @@ sub getAllVersions {
   return new WebService::Cmis::AtomFeed::Objects(repository=>$this->{repository}, xmlDoc=>$result);
 }
 
-=item getRenditions(%params) -> $binaryData
+=item getRenditions(%params) -> %renditions
 
-See CMIS specification document 2.2.4.11 getRenditions
+returns a hash of associated Renditions for the specified object. Only
+rendition attributes are returned, not rendition stream.
 
 The following optional arguments are currently supported:
 
 =over 4
 
-=item renditionFilter
-=item maxItems
-=item skipCount
+=item * renditionFilter
+
+=item * maxItems
+
+=item * skipCount
 
 =back
+
+A rendition has the following attributes:
+
+=over 4
+
+=item * streamId: Identifies the rendition stream
+
+=item * mimetype: The MIME type of the rendition stream
+
+=item * kind: A categorization String associated with the rendition
+ 
+=item * length: The length of the rendition stream in bytes (optional)
+ 
+=item * title: Human readable information about the rendition (optional)
+ 
+=item * height: Typically used for ‘image’ renditions (expressed as pixels).
+SHOULD be present if kind = C<cmis:thumbnail> (optional)
+ 
+=item * width: Typically used for ‘image’ renditions (expressed as pixels).
+SHOULD be present if kind = C<cmis:thumbnail> (optional)
+ 
+=item * renditionDocumentId: If specified, then the rendition can also be accessed as
+a document object in the CMIS services. If not set, then the rendition can only
+be accessed via the rendition services. Referential integrity of this ID is
+repository-specific. (optional)
+
+=back
+
+See CMIS specification document 2.1.4.2 Renditions
 
 =cut
 
 sub getRenditions {
   my $this = shift;
+  my %params = @_;
 
   # if Renditions capability is None, return notsupported
   unless ($this->{repository}->getCapabilities->{'Renditions'}) {
     throw WebService::Cmis::NotSupportedException("This repository does not support Renditions");
   }
 
-  throw WebService::Cmis::NotImplementedException;
-}
-
-=item getRenditionInfo -> %renditionInfo
-
-returns a hash of all known renditions for this CMIS document.
-
-=cut
-
-sub getRenditionInfo {
-  my $this = shift;
-
-  # if Renditions capability is None, return notsupported
-  unless ($this->{repository}->getCapabilities->{'Renditions'}) {
-    throw WebService::Cmis::NotSupportedException("This repository does not support Renditions");
-  }
-
-  unless ($this->{renditionInfo}) {
+  unless ($this->{renditions}) {
     unless ($this->_getDocumentElement->exists($CMIS_XPATH_RENDITIONS)) {
       # reload including renditions
       $this->reload(renditionFilter=>'*');
     }
-    $this->{renditionInfo} = ();
+    $this->{renditions} = ();
     foreach my $node ($this->_getDocumentElement->findnodes($CMIS_XPATH_RENDITIONS)) {
       my $rendition = ();
       foreach my $child ($node->childNodes) {
@@ -368,29 +400,42 @@ sub getRenditionInfo {
         #print STDERR "key=$key, value=".($val||'undef')."\n";
         $rendition->{$key} = $val;
       }
-      $this->{renditionInfo}{$rendition->{streamId}} = $rendition;
+      $this->{renditions}{$rendition->{streamId}} = $rendition;
     }
   }
 
-  return $this->{renditionInfo};
+  return $this->{renditions};
 }
 
 =item getRenditionLink(%params)
 
 returns a link to the documents rendition
 
-Use the renditions properties to get a specific one:
+Use the renditions properties to get a specific one (see L</getRenditions>):
 
 =over 4
 
-=item mimetype
-=item kind
-=item height
-=item width
-=item length
-=item title
+=item * streamId
+
+=item * mimetype
+
+=item * kind
+
+=item * height
+
+=item * width
+
+=item * length
+
+=item * title
+
+=item * renditionDocumentId
 
 =back
+
+  my $doc = $repo->getObjectByPath("/User homes/jeff/sample.pdf");
+  my $thumbnailUrl => $doc->getRenditionLink(kind=>"thumbnail");
+  my $iconUrl = $doc->getRenditionLink(kind=>"icon", width=>16);
 
 =cut
 
@@ -403,7 +448,7 @@ sub getRenditionLink {
     throw WebService::Cmis::NotSupportedException("This repository does not support Renditions");
   }
 
-  my $renditions = $this->getRenditionInfo;
+  my $renditions = $this->getRenditions;
   foreach my $rendi (values %$renditions) {
     my $found = 1;
     foreach my $key (keys %params) {
@@ -430,13 +475,19 @@ The following optional arguments are supported:
 
 =over 4
 
-=item major
-=item filter
-=item includeRelationships
-=item includePolicyIds
-=item renditionFilter
-=item includeACL
-=item includeAllowableActions
+=item * major
+
+=item * filter
+
+=item * includeRelationships
+
+=item * includePolicyIds
+
+=item * renditionFilter
+
+=item * includeACL
+
+=item * includeAllowableActions
 
 =back
 
@@ -459,6 +510,8 @@ sub getLatestVersion {
 
 =item copy($targetFolder, $propertyList, $versionState) -> $cmisDocument
 
+TODO: This is not yet implemented.
+
 Creates a document object as a copy of the given source document in the (optionally) 
 specified location. 
 
@@ -473,29 +526,29 @@ Valid values for $versionState are:
 
 =over 4
 
-=item "none": the document is created as a non-versionable object
+=item * none: the document is created as a non-versionable object
 
-=item "checkedout": the document is created in checked-out state
+=item * checkedout: the document is created in checked-out state
 
-=item "major" (default): the document is created as a new major version
+=item * major (default): the document is created as a new major version
 
-=item "minor": the document is created as a minor version
+=item * minor: the document is created as a minor version
 
 =back
-
-See CMIS specification document 2.2.4.2 (createDocumentFromSource)
 
 The following optional arguments are not yet supported:
 
 =over 4
 
-=item policies
-=item addACEs
-=item removeACEs
+=item * policies
+
+=item * addACEs
+
+=item * removeACEs
 
 =back
 
-TODO: This is not yet implemented.
+See CMIS specification document 2.2.4.2 (createDocumentFromSource)
 
 =cut
 
@@ -520,6 +573,8 @@ sub setContentStream { throw WebService::Cmis::NotImplementedException; }
 =item deleteContentStream
 
 TODO: This is not yet implemented.
+
+See CMIS specification document 2.2.4.17 deleteContentStream
 
 =cut
 

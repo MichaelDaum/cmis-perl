@@ -2,13 +2,11 @@ package WebService::Cmis::Relationship;
 
 =head1 NAME
 
-WebService::Cmis::Relationship
-
-Representation of a cmis object
-
-=head1 SYNOPSIS
+WebService::Cmis::Relationship - Representation of a cmis relationship
 
 =head1 DESCRIPTION
+
+TODO
 
 =cut
 

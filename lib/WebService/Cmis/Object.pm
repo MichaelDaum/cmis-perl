@@ -2,13 +2,27 @@ package WebService::Cmis::Object;
 
 =head1 NAME
 
-WebService::Cmis::Object
-
-Representation of a cmis object
-
-=head1 SYNOPSIS
+WebService::Cmis::Object - Representation of a cmis object
 
 =head1 DESCRIPTION
+
+This class provides the bulk of methods to work with CMIS objects.
+When creating a new object on the base of an xml document, will
+it be subclassed correctly reading the C<cmis:baseTypeId> property.
+
+  my $obj = WebService::Cmis::Object(
+    repository=>$this->{repository}, 
+    xmlDoc=>$xmlDoc
+  );
+
+  if ($obj->isa('WebService::Cmis::Folder')) {
+    # this is a folder
+  }
+
+Parent class: L<WebService::Cmis::AtomEntry>
+
+Sub classes: L<WebService::Cmis::Folder>, L<WebService::Cmis::Document>,
+L<WebService::Cmis::Relationship>, L<WebService::Cmis::Policy>.
 
 =cut
 
@@ -23,6 +37,9 @@ use WebService::Cmis::AtomEntry ();
 our @ISA = qw(WebService::Cmis::AtomEntry);
 
 our %classOfBaseTypeId = (
+  'F:st:sites' => 'WebService::Cmis::Folder', # SMELL: specific to alfresco
+  'F:st:site' => 'WebService::Cmis::Folder', 
+
   'cmis:folder' => 'WebService::Cmis::Folder',
   'cmis:document' => 'WebService::Cmis::Document',
   'cmis:relationship' => 'WebService::Cmis::Relationship',
@@ -62,14 +79,7 @@ sub new {
   return bless($obj, $subClass);
 }
 
-
-
-=item _initData
-
-resets the internal cache of this entry.
-
-=cut
-
+# resets the internal cache of this entry.
 sub _initData {
   my $this = shift;
 
@@ -106,6 +116,24 @@ effect on subsequent calls until the filter argument is changed. To
 reset to the full list of properties, call reload with filter set to
 '*'.
 
+Parameters:
+
+=over 4
+
+=item * filter
+
+=item * includeAllowableActions
+
+=item * includePolicyIds
+
+=item * includeRelationships
+
+=item * includeACL
+
+=item * renditionFilter
+
+=back
+
 =cut
 
 sub reload {
@@ -135,7 +163,6 @@ sub reload {
 }
 
 =item getId() -> $id
-
 
 returns the object ID for this object.
 
@@ -184,9 +211,9 @@ sub getTypeId {
 
 =item getProperties() -> %properties;
 
-returns a hash of the object's properties. If CMIS returns an
-empty element for a property, the property will be in the
-hash with an undef value
+returns a hash of the object's L<properties|WebService::Cmis::Property>. If
+CMIS returns an empty element for a property, the property will be in the hash
+with an undef value
 
 See CMIS specification document 2.2.4.8 getProperties
 
@@ -258,21 +285,23 @@ sub getAllowableActions {
   return $this->{allowableActions};
 }
 
-=item getACL() 
+=item getACL() -> $acl
 
-repository->getCapabilities()->{'ACL'} must return manage or discover.
+returns the L<access controls|WebService::Cmis::ACL> for this object.
+
+The repository must have ACL capabilities 'manage' or 'discover'.
+
+The optional C<onlyBasicPermissions> argument is currently not supported.
 
 See CMIS specification document 2.2.10.1 getACL
-
-The optional onlyBasicPermissions argument is currently not supported.
 
 =cut
 
 sub getACL {
   my $this = shift;
 
-  unless ($this->{repository}->getCapabilities()->{'ACL'}) {
-    throw WebService::Cmis::NotSupportedException("This repository does not support ACLs"); 
+  unless ($this->{repository}->getCapabilities()->{'ACL'} =~ /^(manage|discover)$/) {
+    throw WebService::Cmis::NotSupportedException("This repository does not allow to manage ACLs"); 
   }
 
   require WebService::Cmis::ACL;
@@ -299,7 +328,8 @@ sub getSelfLink {
 
 =item getAppliedPolicies(%params) -> $atomFeed
 
-returns the list of policies applied to this object.
+returns the L<list of policies|WebService::Cmis::AtomFeed::Objects> applied to
+this object.
 
 See CMIS specification document 2.2.9.3 getAppliedPolicies
 
@@ -325,29 +355,35 @@ sub getAppliedPolicies {
   return new WebService::Cmis::AtomFeed::Objects(repository=>$this->{repository}, xmlDoc=>$result);
 }
 
-=item getObjectParents -> $atomFeedOrEntry
+=item getObjectParents(%params) -> $atomFeedOrEntry
 
 gets the parent(s) for the specified non-folder, fileable object.
-This is either an AtomFeed or an AtomEntry object depending on the "up" relation.
+This is either an L<atom feed of objects|WebService::Cmis::AtomFeed::Objects> or 
+the parent L<cmis object|WebService::Cmis::Object> depending on the "up" relation.
 
-See CMIS specification document 2.2.3.5 getObjectParents
-
-The following optional arguments are supported:
+The following optional arguments are - NOT YET - supported: (TODO)
 
 =over 4
 
-=item filter
-=item includeRelationships
-=item renditionFilter
-=item includeAllowableActions
-=item includeRelativePathSegment
+=item * filter
+
+=item * includeRelationships
+
+=item * renditionFilter
+
+=item * includeAllowableActions
+
+=item * includeRelativePathSegment
 
 =back
+
+See CMIS specification document 2.2.3.5 getObjectParents
 
 =cut
 
 sub getObjectParents {
   my $this = shift;
+  my %params = @_;
 
   # get the appropriate 'up' link
   my $parentUrl = $this->getLink(UP_REL);
@@ -371,29 +407,37 @@ sub getObjectParents {
 
 =item getRelationships(%params) -> $atomFeed
 
-returns a result set of relationship objects for each relationship where the
+returns a result L<set of relationship
+objects|WebService::Cmis::AtomFeed::Objects> for each relationship where the
 source is this object.
 
-See CMIS specification document 2.2.8.1 getObjectRelationships
-
-The following optional arguments are supported:
+The following optional arguments are - NOT YET - supported: (TODO)
 
 =over 4
 
-=item includeSubRelationshipTypes
-=item relationshipDirection
-=item typeId
-=item maxItems
-=item skipCount
-=item filter
-=item includeAllowableActions
+=item * includeSubRelationshipTypes
+
+=item * relationshipDirection
+
+=item * typeId
+
+=item * maxItems
+
+=item * skipCount
+
+=item * filter
+
+=item * includeAllowableActions
 
 =back
+
+See CMIS specification document 2.2.8.1 getObjectRelationships
 
 =cut
 
 sub getRelationships {
   my $this = shift;
+  my %params = @_;
 
   my $url = $this->getLink(RELATIONSHIPS_REL);
 
@@ -410,11 +454,21 @@ sub getRelationships {
 
 =item delete(%params)
 
-Deletes this cmis object from the repository. Note that in the
-case of a Folder object, some repositories will refuse to
-delete it if it contains children and some will delete it without
-complaint. If what you really want to do is delete the folder and all
-of its descendants, use Folder->deleteTree instead.
+Deletes this cmis object from the repository. Note that in the case of a Folder
+object, some repositories will refuse to delete it if it contains children and
+some will delete it without complaint. If what you really want to do is delete
+the folder and all of its descendants, use Folder->deleteTree instead.
+
+The following optional arguments are - NOT YET - supported: (TODO)
+
+=over 4
+
+=item * allVersions: if TRUE (default), then delete all versions of the
+document. If FALSE, delete only the document object specified. The Repository
+MUST ignore the value of this parameter when this service is invoke on a
+non-document object or non-versionable document object.
+
+=back
 
 See CMIS specification document 2.2.4.14 delete
 
@@ -422,6 +476,7 @@ See CMIS specification document 2.2.4.14 delete
 
 sub delete {
   my $this = shift;
+  my %params = @_;
 
   my $url = $this->getSelfLink;
   my $result = $this->{repository}{client}->delete($url, @_);
@@ -522,10 +577,11 @@ sub unfile {
 
 =item updateProperties($propertyList) -> $this
 
+TODO: The optional changeToken is not yet supported.
+
 Updates the properties of an object with the properties provided.
 Only provide the set of properties that need to be updated.
 
-See CMIS specification document 2.2.4.12 updateProperties
 
   $folder = $repo->getObjectByPath('/SomeFolder');
   $folder->getName; # returns SomeFolder
@@ -539,8 +595,7 @@ See CMIS specification document 2.2.4.12 updateProperties
 
   $folder->getName; # returns SomeOtherName
 
-
-TODO: The optional changeToken is not yet supported.
+See CMIS specification document 2.2.4.12 updateProperties
 
 =cut
 
@@ -611,9 +666,10 @@ sub updateSummary {
   return $this;
 }
 
-=item applyACL($acl)
+=item applyACL($acl) -> $acl
 
-Updates the object with the provided ACL
+applies specified L<ACL|WebService::Cmis::ACL> to the object and returns
+the updated ACLs as stored on the server.
 
   my $obj = $repo->getObject($id);
   my $acl = $obj->getACL->addEntry(
@@ -623,8 +679,7 @@ Updates the object with the provided ACL
       direct => 'true',
     )
   );
-  my $newAcl => $obj->applyACL($acl);
-
+  my $updatedACL => $obj->applyACL($acl);
 
 See CMIS specification document 2.2.10.2 applyACL
 
@@ -641,8 +696,6 @@ sub applyACL {
   unless ($url) {
      throw Error::Simple("Could not determine the object's ACL URL"); # SMELL: use custom exception
   }
-#print STDERR "url=$url\n";
-#print STDERR "acl=".$acl->getXmlDoc
 
   my $xmlDoc = $acl->getXmlDoc;
 

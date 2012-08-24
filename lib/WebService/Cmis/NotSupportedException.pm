@@ -4,11 +4,12 @@ package WebService::Cmis::NotSupportedException;
 
 WebService::Cmis::NotSupportedException
 
-=head1 SYNOPSIS
-
-this is a pure marker class
-
 =head1 DESCRIPTION
+
+This exception is raised when a service is called that
+the repository is not capable of.
+
+See L<WebService::Cmis::Repository/getCapabilities>.
 
 =cut
 

@@ -21,7 +21,7 @@ use Error qw(:try);
 
 =over 4
 
-=item new(I<%args>)
+=item new(%params)
 
 =cut
 

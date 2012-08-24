@@ -2,11 +2,13 @@ package WebService::Cmis::ChangeEntry;
 
 =head1 NAME
 
-WebService::Cmis::ChangeEntry
-
-=head1 SYNOPSIS
+WebService::Cmis::ChangeEntry - Representation of an entry in a change log feed
 
 =head1 DESCRIPTION
+
+Objects of this class are collected as part of a L<change log|WebService::Cmis::AtomFeed::ChangeEntries>.
+
+Parent class: L<WebService::Cmis::AtomEntry>
 
 =cut
 
@@ -36,9 +38,9 @@ sub DESTROY {
   undef $this->{properties};
 }
 
-=item getProperties -> %properties
+=item getProperties() -> %properties
 
-returns a hash of properties of the change entry. Note that depending on the
+returns a hash of L<properties|WebService::CmisProperty> of the change entry. Note that depending on the
 capabilities of the repository ("capabilityChanges") the list may not
 include the actual property values that changed.
 
@@ -106,10 +108,13 @@ one of:
 
 =over 4
 
-=item created
-=item updated
-=item deleted
-=item security
+=item * created
+
+=item * updated
+
+=item * deleted
+
+=item * security
 
 =back
 

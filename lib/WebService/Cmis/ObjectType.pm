@@ -2,13 +2,11 @@ package WebService::Cmis::ObjectType;
 
 =head1 NAME
 
-WebService::Cmis::ObjecType
-
-Representation of a cmis object type
-
-=head1 SYNOPSIS
+WebService::Cmis::ObjecType . Representation of a cmis object type
 
 =head1 DESCRIPTION
+
+Parent class: L<WebService::Cmis::AtomEntry>
 
 =cut
 
@@ -26,9 +24,7 @@ our $CMIS_XPATH_PROPERTY_DEFINITIONS = new XML::LibXML::XPathExpression('./*[loc
 
 =head1 METHODS
 
-=over 4
-
-=item new(I<%args>)
+=item new()
 
 =cut
 
@@ -83,7 +79,7 @@ sub getAttributes {
 
 =item getPropertyDefinitions -> %propertyDefinitions
 
-returns a hash of PropertyDefinition objects representing each property
+returns a hash of L<WebService::Cmis::PropertyDefinition> objects representing each property
 defined for this type.
 
 =cut
@@ -236,6 +232,8 @@ sub isCreatable {
 =item isFileable -> $boolean
 
 getter for cmis:fileable
+
+See CMIS specification document 2.1.5.1 File-able Objects
 
 =cut
 

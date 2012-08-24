@@ -2,13 +2,13 @@ package WebService::Cmis::AtomFeed::ChangeEntries;
 
 =head1 NAME
 
-WebService::Cmis::AtomFeed::ChangeEntries
-
-=head1 SYNOPSIS
-
-This is a Result sets representing an atom feed of CMIS ChangeEntry objects.
+WebService::Cmis::AtomFeed::ChangeEntries - a set of CMIS ChangeEntry objects
 
 =head1 DESCRIPTION
+
+This is a Result sets representing an atom feed of L<CMIS ChangeEntry objects|WebService::Cmis::ChangeEntry>
+
+Parent-class: L<WebService::Cmis::AtomFeed>
 
 =cut
 

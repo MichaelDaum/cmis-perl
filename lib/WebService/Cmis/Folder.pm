@@ -2,11 +2,9 @@ package WebService::Cmis::Folder;
 
 =head1 NAME
 
-WebService::Cmis::Object
+WebService::Cmis::Folder - Representation of a cmis folder
 
-Representation of a cmis object
-
-=head1 SYNOPSIS
+See CMIS specification document 2.1.5 Folder Object
 
 =head1 DESCRIPTION
 
@@ -40,14 +38,21 @@ The following optional arguments are supported:
 
 =over 4
 
-=item maxItems
-=item skipCount
-=item orderBy
-=item filter
-=item includeRelationships
-=item renditionFilter
-=item includeAllowableActions
-=item includePathSegment
+=item * maxItems
+
+=item * skipCount
+
+=item * orderBy
+
+=item * filter
+
+=item * includeRelationships
+
+=item * renditionFilter
+
+=item * includeAllowableActions
+
+=item * includePathSegment
 
 =back
 
@@ -118,17 +123,21 @@ The following optional argument is supported:
 
 =over 4
 
-=item depth. 
-
+=item * depth: 
 Use depth=-1 for all descendants, which is the default if no
 depth is specified.
 
-=item filter
-=item includeAllowableActions
-=item includePathSegment
-=item includeRelationships
-=item renditionFilter
-=item types
+=item * filter
+
+=item * includeAllowableActions
+
+=item * includePathSegment
+
+=item * includeRelationships
+
+=item * renditionFilter
+
+=item * types
 
 =back
 
@@ -188,12 +197,17 @@ The following optional arguments are supported:
 
 =over 4
 
-=item depth
-=item filter
-=item includeRelationships
-=item renditionFilter
-=item includeAllowableActions
-=item includePathSegment
+=item * depth
+
+=item * filter
+
+=item * includeRelationships
+
+=item * renditionFilter
+
+=item * includeAllowableActions
+
+=item * includePathSegment
 
 =back
 

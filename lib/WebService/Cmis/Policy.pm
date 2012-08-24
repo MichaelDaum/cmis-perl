@@ -2,13 +2,11 @@ package WebService::Cmis::Policy;
 
 =head1 NAME
 
-WebService::Cmis::Object
-
-Representation of a cmis object
-
-=head1 SYNOPSIS
+WebService::Cmis::Policy - Representation of a cmis policy
 
 =head1 DESCRIPTION
+
+TODO: this isn't implemented yet
 
 =cut
 

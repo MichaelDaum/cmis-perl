@@ -13,6 +13,7 @@ $WebService::Cmis{Connections} = {
     user => "admin",
     password => "admin",
     testRoot => "/User Homes/admin",
+    cacheEnabled => true,
   },
   nuxeo_local => {
     url => "http://localhost:8080/nuxeo/atom/cmis",
@@ -23,6 +24,7 @@ $WebService::Cmis{Connections} = {
     url => "http://cmis.demo.nuxeo.org/nuxeo/atom/cmis",
     user => "Administrator",
     password => "Administrator",
+    cacheEnabled => true,
   },
   xcmis_local => {
     url => "http://localhost:9090/xcmis/rest/cmisatom",
@@ -33,6 +35,7 @@ $WebService::Cmis{Connections} = {
     url => "http://xcmis.org/xcmis/rest/cmisatom",
     user => "root",
     password => "exo",
+    cacheEnabled => true,
   }
 };
 

@@ -4,10 +4,14 @@ package WebService::Cmis::ServerException;
 
 WebService::Cmis::ServerException
 
-=head1 SYNOPSIS
-
-
 =head1 DESCRIPTION
+
+This exception will be raised when an error happened on the server
+while the client communicates with it.
+
+See L<WebService::Cmis::Client/processErrors>.
+
+Parent class: Error
 
 =cut
 

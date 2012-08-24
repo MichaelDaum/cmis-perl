@@ -2,15 +2,25 @@ package WebService::Cmis::AtomFeed;
 
 =head1 NAME
 
-WebService::Cmis::AtomFeed
-
-=head1 SYNOPSIS
-
-Abstract class to representation of an Atom feed.
+WebService::Cmis::AtomFeed - Representation of an Atom feed.
 
 =head1 DESCRIPTION
 
 This class is subclassed to further specify the type of entries in this collection.
+
+Sub-classes:
+
+=over 4
+
+=item * L<WebService::Cmis::AtomFeed::Objects>
+
+=item * L<WebService::Cmis::AtomFeed::ChangeEntries> 
+
+=item * L<WebService::Cmis::AtomFeed::ObjectTypes>
+
+=back
+
+Sub-classes must implement <L/newEntry> to specify how to instantiate objects of this feed.
 
 =cut
 
@@ -31,7 +41,7 @@ our $CMIS_XPATH_TOTALRESULTS = new XML::LibXML::XPathExpression('./*[local-name(
 
 =over 4
 
-=item new(I<%args>)
+=item new(%params)
 
 Create a new WebService::Cmis::AtomFeed object. 
 
@@ -61,12 +71,6 @@ sub _initData {
   undef $this->{pageSize};
 }
 
-=item DESTROY
-
-custom destructor to make sure cyclic links are resolved
-
-=cut
-
 sub DESTROY {
   my $this = shift;
 
@@ -89,17 +93,11 @@ sub getLink {
   return $linkNode->value if $linkNode;
 }
 
-=item _getPage($relation)
-
-given a specified $relation, does a get using that link (if one exists)
-and then converts the resulting XML into a list of
-AtomEntry objects or its appropriate sub-type.
-
-The results are kept around to facilitate repeated calls without moving
-the cursor.
-
-=cut
-
+# given a specified $relation, does a get using that link (if one exists)
+# and then converts the resulting XML into a list of
+# AtomEntry objects or its appropriate sub-type.
+# The results are kept around to facilitate repeated calls without moving
+# the cursor.
 sub _getPage {
   my ($this, $relation) = @_;
 
@@ -114,12 +112,7 @@ sub _getPage {
   return $this->_getPageEntries;
 }
 
-=item _getPageEntries
-
-returns a list of all AtomEntries on the current page
-
-=cut
-
+# returns a list of all AtomEntries on the current page
 sub _getPageEntries {
   my $this = shift;
 

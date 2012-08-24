@@ -2,15 +2,13 @@ package WebService::Cmis::AtomEntry;
 
 =head1 NAME
 
-WebService::Cmis::AtomEntry
-
-Representation of a cmis object
-
-=head1 SYNOPSIS
+WebService::Cmis::AtomEntry - Representation of a cmis object
 
 =head1 DESCRIPTION
 
-base class for entries in an AtomFeed
+Base class for entries in a L<atom feed|WebService::Cmis::AtomFeeed>.
+
+Sub classes:
 
 =cut
 
@@ -30,7 +28,7 @@ our $CMIS_XPATH_ID = new XML::LibXML::XPathExpression('./*[local-name() = "id" a
 
 =over 4
 
-=item new(I<%args>)
+=item new()
 
 =cut
 

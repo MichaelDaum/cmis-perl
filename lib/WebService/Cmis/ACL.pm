@@ -23,7 +23,7 @@ use Error qw(:try);
 
 =over 4
 
-=item new(I<%args>)
+=item new(%params)
 
 =cut
 
@@ -39,12 +39,6 @@ sub new {
   
   return $this;
 }
-
-=item DESTROY
-
-destructor for this ACL object
-
-=cut
 
 sub DESTROY {
   my $this = shift;

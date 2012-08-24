@@ -19,7 +19,7 @@ use warnings;
 
 =over 4
 
-=item new(I<%args>)
+=item new()
 
   my $ace = new WebService::Cmis::ACE(
     principalId => 'jdoe',

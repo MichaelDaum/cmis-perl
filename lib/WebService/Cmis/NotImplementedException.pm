@@ -4,10 +4,12 @@ package WebService::Cmis::NotImplementedException;
 
 WebService::Cmis::NotImplementedException
 
-=head1 SYNOPSIS
-
-
 =head1 DESCRIPTION
+
+This exception is raised when calling services not implemented
+by the client library.
+
+Parent class: Error
 
 =cut
 
@@ -20,7 +22,7 @@ our @ISA = qw(Error);
 
 =over 4
 
-=item new
+=item new()
 
 =cut
 
@@ -33,10 +35,6 @@ sub new {
 }
 
 =back
-
-=head1 AUTHOR
-
-Michael Daum C<< <daum@michaeldaumconsulting.com> >>
 
 =head1 COPYRIGHT AND LICENSE
 
