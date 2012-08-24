@@ -60,7 +60,7 @@ SHA1 2bd2b1b135040360ab650cf82b071fd6271fa6a3 lib/WebService/Cmis/Document.pm
 SHA1 a368f36e1a7f45547c559498e0930d8ee32ec47b lib/WebService/Cmis/Folder.pm
 SHA1 43971364b5925648c9c737947bd8fac9270dfc93 lib/WebService/Cmis/NotImplementedException.pm
 SHA1 a52c47f8ad74e1f68a4a35598d4c76faaa353d29 lib/WebService/Cmis/NotSupportedException.pm
-SHA1 269e241cb6a2fccf9401665017c7c8da07a1422c lib/WebService/Cmis/Object.pm
+SHA1 76b2019b11b07cd10bda3927a7822a9b31fc478c lib/WebService/Cmis/Object.pm
 SHA1 9724fee3778015a4c4f4ba6a05c595a0dc9e3d0e lib/WebService/Cmis/ObjectType.pm
 SHA1 cfbaf2ab10507df45cec1a1ac54f55cc0b8ea954 lib/WebService/Cmis/Policy.pm
 SHA1 ad9587a666bacff6a06827e12c430676568d4edb lib/WebService/Cmis/Property.pm
@@ -95,11 +95,11 @@ SHA1 a284683173bea40e9e4679c1a044700443f8a333 t/pod.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQEcBAEBAgAGBQJQN42LAAoJEFbHzikUeAidKzcIAJlfYgVS2I1QVIPlN58VUGG4
-gMH4ULmy+egse4P1XF/rKmT+2AXjCvttGIleYQv6KDuanChzMUfO3CG9c8kbJRt5
-8FD/cfcLzuD4uAJ9P7UJZZ4gz1/b2HUXYvDj0yfA5S0Gd38HprluwlTqBjDU33Z4
-WPlpWen6+rOwsZ8kVAtmSvppk0iRA6nOfjHKjFnNAs5v7wfSVhlNSLsig18JZrPI
-hvn1gI0outviKsQkqWpAD4TnBle2zlv4I/mF/KlQfX9a9DysfAIVNZn9BpHa+uMo
-/k6M7AhfRj1I1lXE5u4nxldPVH3NgrdHLgjCLVNMWvM3sAMHhovKUwUDQXSV6Hs=
-=a1Td
+iQEcBAEBAgAGBQJQN7ggAAoJEFbHzikUeAid+EIIAKF5Igi35zA8M7XikKrgq0Yt
+YDGb5wQH/hifCvLCaRbtS9vunsx0/1I+NN6JYQ/Bf7D4b8PzWyWkTWbQlA60zwez
+3UD+JmmHxIT5lf2ZTrip7AeaCj7OC1E/hK3R5R8EP0zL/WVGWz797V+5iXjh80ud
+dj6XAJ1DVhLT4q8G1d+VXJVmjeQ1h054ytwm6fZO3oSKUsAChmDtsHSsFfpjx1E5
+zE6XLdp7yVgKVVghFHir1Twe8mnzgfEW3xKsRuhyuKVol73K/FSoSlo7hxfqooBO
+ziWywzil4n6v9xjeKab0UycvthMYI/K2cG+agz/FQNmNo/srJ8Wl3LJ5dbdV50k=
+=JdaN
 -----END PGP SIGNATURE-----
