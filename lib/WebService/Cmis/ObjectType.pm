@@ -24,6 +24,8 @@ our $CMIS_XPATH_PROPERTY_DEFINITIONS = new XML::LibXML::XPathExpression('./*[loc
 
 =head1 METHODS
 
+=over 4
+
 =item new()
 
 =cut
