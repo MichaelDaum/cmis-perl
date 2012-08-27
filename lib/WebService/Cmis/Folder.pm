@@ -8,6 +8,11 @@ See CMIS specification document 2.1.5 Folder Object
 
 =head1 DESCRIPTION
 
+This is a container object that holds other objects thus establishing a
+hierarchical structure.
+
+Parent class: L<WebService::Cmis::Ojbect>
+
 =cut
 
 use strict;
@@ -65,7 +70,7 @@ sub getChildren {
   my $childrenUrl = $this->getChildrenLink();
 
   # invoke the URL
-  my $result = $this->{repository}{client}->get($childrenUrl, @_);
+  my $result = $this->{repository}{client}->get($childrenUrl, @_); # here go the params
 
   #print STDERR "### getting children for\n".$result->toString(1)."\n###\n";
 

@@ -56,25 +56,26 @@ our @ISA = qw(Exporter);
 our @_namespaces = qw(ATOM_NS APP_NS CMISRA_NS CMIS_NS OPENSEARCH_NS);
 
 our @_contenttypes = qw(ATOM_XML_TYPE ATOM_XML_ENTRY_TYPE ATOM_XML_ENTRY_TYPE_P
-   ATOM_XML_FEED_TYPE ATOM_XML_FEED_TYPE_P CMIS_TREE_TYPE CMIS_TREE_TYPE_P
-   CMIS_QUERY_TYPE CMIS_ACL_TYPE);
+  ATOM_XML_FEED_TYPE ATOM_XML_FEED_TYPE_P CMIS_TREE_TYPE CMIS_TREE_TYPE_P
+  CMIS_QUERY_TYPE CMIS_ACL_TYPE);
 
-our @_relations = qw(DOWN_REL FIRST_REL LAST_REL NEXT_REL PREV_REL SELF_REL UP_REL
-   TYPE_DESCENDANTS_REL VERSION_HISTORY_REL FOLDER_TREE_REL RELATIONSHIPS_REL
-   ROOT_DESCENDANTS_REL ACL_REL CHANGE_LOG_REL POLICIES_REL);
+our @_relations = qw(ACL_REL ALTERNATE_REL CHANGE_LOG_REL DESCRIBEDBY_REL
+  DOWN_REL EDIT_META_REL EDIT_REL FIRST_REL FOLDER_TREE_REL LAST_REL NEXT_REL
+  POLICIES_REL PREV_REL RELATIONSHIPS_REL ROOT_DESCENDANTS_REL SELF_REL
+  SERVICE_REL TYPE_DESCENDANTS_REL UP_REL VERSION_HISTORY_REL VIA_REL);
 
 our @_collections = qw(QUERY_COLL TYPES_COLL CHECKED_OUT_COLL UNFILED_COLL
-   ROOT_COLL);
+  ROOT_COLL);
 
 our @_utils = qw(writeCmisDebug);
 
 our @EXPORT_OK = (@_namespaces, @_contenttypes, @_relations, @_collections, @_utils);
 our %EXPORT_TAGS = (
- namespaces => \@_namespaces,
- contenttypes => \@_contenttypes,
- relations => \@_relations,
- collections => \@_collections,
- utils => \@_utils,
+  namespaces => \@_namespaces,
+  contenttypes => \@_contenttypes,
+  relations => \@_relations,
+  collections => \@_collections,
+  utils => \@_utils,
 );
 
 # Namespaces
@@ -98,14 +99,20 @@ use constant CMIS_QUERY_TYPE => 'application/cmisquery+xml';
 use constant CMIS_ACL_TYPE => 'application/cmisacl+xml';
 
 # Standard rels
+use constant ALTERNATE_REL => 'alternate';
+use constant DESCRIBEDBY_REL => 'describedby';
 use constant DOWN_REL => 'down';
+use constant EDIT_META_REL => 'edit-meta';
+use constant EDIT_REL => 'edit';
 use constant FIRST_REL => 'first';
 use constant LAST_REL => 'last';
 use constant NEXT_REL => 'next';
-use constant PREV_REL => 'prev';
+use constant PREV_REL => 'previous';
 use constant SELF_REL => 'self';
+use constant SERVICE_REL => 'service';
 use constant UP_REL => 'up';
 use constant VERSION_HISTORY_REL => 'version-history';
+use constant VIA_REL => 'via';
 
 use constant ACL_REL => 'http://docs.oasis-open.org/ns/cmis/link/200908/acl';
 use constant CHANGE_LOG_REL => 'http://docs.oasis-open.org/ns/cmis/link/200908/changes';
@@ -144,7 +151,6 @@ environment variable to switch on some additional debug messages.
 sub writeCmisDebug {
   print STDERR "WebService::Cmis - $_[0]\n" if $ENV{CMIS_DEBUG};
 }
-
 
 =back
 

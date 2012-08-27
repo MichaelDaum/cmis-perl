@@ -323,6 +323,19 @@ sub getSelfLink {
   return $_[0]->getLink(SELF_REL);
 }
 
+=item getEditLink -> $href
+
+returns the URL that can be used with the HTTP PUT method to modify the
+atom:entry for the CMIS resource
+
+See CMIS specification document 3.4.3.1 Existing Link Relations
+
+=cut
+
+sub getEditLink {
+  return $_[0]->getLink(EDIT_REL);
+}
+
 =item getAppliedPolicies(%params) -> $atomFeed
 
 returns the L<list of policies|WebService::Cmis::AtomFeed::Objects> applied to

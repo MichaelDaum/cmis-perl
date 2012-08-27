@@ -203,6 +203,19 @@ sub getFirst {
   return $this->newEntry($this->_getPageEntries->[$this->{index}]);
 }
 
+=item getLast -> $lastAtomEntry
+
+returns the last AtomEntry of the feed.
+
+=cut 
+
+sub getLast {
+  my $this = shift;
+
+  $this->fastforward;
+  return $this->newEntry($this->_getPageEntries->[$this->{index}]);
+}
+
 =item fastforward 
 
 fetches the last page of the feed and sets the index to the last entry on that
