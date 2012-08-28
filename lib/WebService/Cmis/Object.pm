@@ -489,9 +489,7 @@ sub delete {
   my %params = @_;
 
   my $url = $this->getSelfLink;
-  my $result = $this->{repository}{client}->delete($url, @_);
-
-  return $result;
+  return $this->{repository}{client}->delete($url, @_);
 }
 
 =item move($sourceFolder, $targetFolder) -> $this

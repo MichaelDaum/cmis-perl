@@ -680,8 +680,7 @@ sub createEmptyXmlDoc {
   properties=>$propsList, 
   contentFile=>$filename, 
   contentData=>$data, 
-  contentType=>$type, 
-  contentEncoding=>$encoding
+  contentType=>$type
 ) -> $atomEntry
 
 helper method that knows how to build an Atom entry based
@@ -709,11 +708,10 @@ sub createEntryXmlDoc {
 
   # if there is a File, encode it and add it to the XML
   my $contentFile = $params{contentFile};
-  if (defined $contentFile) {
+  my $contentData = $params{contentData};
+  if (defined $contentFile || defined $contentData) {
 
     my $mimeType = $params{contentType};
-    my $encoding = $params{contentEncoding};
-    my $contentData = $params{contentData};
     
     # read file
     unless (defined $contentData) {
@@ -737,14 +735,11 @@ sub createEntryXmlDoc {
         $this->{fileMage} = new File::MMagic;
       }
 
-      $mimeType = $this->{fileMage}->checktype_filename($contentFile);
+      $mimeType = $this->{fileMage}->checktype_contents($contentData);
 
       # mimeType fallback
       $mimeType = 'application/binary' unless defined $mimeType;
     }
-
-    # encoding default 
-    $encoding = 'utf8' unless defined $encoding;
 
     # This used to be ATOM_NS content but there is some debate among
     # vendors whether the ATOM_NS content must always be base64
@@ -1083,20 +1078,17 @@ sub getContentChanges {
   contentFile=>$filename,
   contentData=>$data, 
   contentType=>$type, 
-  contentEncoding=>$encoding
 ) -> $cmisDocument
 
-creates a new Document object in the parent folder provided or filed to the Unfiled collection
-of the repository.
+creates a new Document object in the parent folder provided or filed to the
+Unfiled collection of the repository.
 
 The method will attempt to guess the appropriate content type and encoding
 based on the file. To specify it yourself, pass them in via the contentType and
-contentEncoding arguments.
 
-To specify a custom object type, pass in a Property for
-cmis:objectTypeId representing the type ID
-of the instance you want to create. If you do not pass in an object
-type ID, an instance of 'cmis:document' will be created.
+To specify a custom object type, pass in a Property for cmis:objectTypeId
+representing the type ID of the instance you want to create. If you do not pass
+in an object type ID, an instance of 'cmis:document' will be created.
 
 =cut
 

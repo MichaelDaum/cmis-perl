@@ -79,9 +79,9 @@ sub test_Document_checkOut_checkIn : Test(6) {
   my $obj = $this->getTestDocument;
   my $isCheckedOut = $obj->isCheckedOut;
   note("isCheckedout=$isCheckedOut");
-  ok($isCheckedOut == 0) or diag("test document is checked out");
+  is($isCheckedOut, 0) or diag("test document is checked out");
 
-  my $result = $obj->checkOut;
+  $obj->checkOut;
   $isCheckedOut = $obj->isCheckedOut;
   note("isCheckedout=$isCheckedOut");
   ok(defined $isCheckedOut) or diag("test document is NOT checked out");
@@ -98,14 +98,12 @@ sub test_Document_checkOut_checkIn : Test(6) {
   isnt($obj->getId, $pwc->getId) or diag("document id should be different from pwc id");
 
   note("checking in");
-  $result = $pwc->checkIn("this is a test checkin time=".time, major=>1);
-  note("result=".$result->getId);
+  $pwc->checkIn("this is a test checkin time=".time, major=>1);
+  note("pwc=".$pwc->getId);
 
   $pwc = $obj->getPrivateWorkingCopy;
   ok(!defined $pwc) or diag("there shouldn't be a private working copy anymore as the document has been checked in");
 }
-
-
 
 sub test_Document_getContentStream : Test(2) {
   my $this = shift;
@@ -119,6 +117,41 @@ sub test_Document_getContentStream : Test(2) {
   ok(defined $name);
   note("name=$name");
   _saveFile("/tmp/downloaded_$name", $content);
+}
+
+sub test_Document_setContentStream : Test(7) {
+  my $this = shift;
+
+  my $obj = $this->getTestDocument;
+  my $id = $obj->getId;
+
+  my $versionLabel = $obj->getProperty("cmis:versionLabel");
+  ok(defined $versionLabel);
+  note("versionLabel=$versionLabel");
+  
+  my $testFile = $this->{config}{testFile};
+  my $updatedObj = $obj->setContentStream(
+    contentFile => $testFile
+  );
+  ok(defined $updatedObj);
+  ok($updatedObj->{xmlDoc});
+  #print STDERR "xmlDoc=".$updatedObj->{xmlDoc}->toString(1)."\n";
+
+  my $updatedId = $updatedObj->getId;
+  note("before id=$id, after id=$updatedId");
+
+  my $contentStreamMimeType = $updatedObj->getProperty("cmis:contentStreamMimeType");
+  note("contentStreamMimeType=$contentStreamMimeType");
+  is($contentStreamMimeType, "image/jpeg");
+
+  my $updatedVersionLabel = $obj->getProperty("cmis:versionLabel");
+  note("updatedVersionLabel=$updatedVersionLabel");
+  ok(defined $updatedVersionLabel);
+  ok($versionLabel ne $updatedVersionLabel);
+
+  my $latestObj = $obj->getLatestVersion;
+  my $latestVersionLabel = $latestObj->getProperty("cmis:versionLabel");
+  is($updatedVersionLabel, $latestVersionLabel);
 }
 
 sub test_Document_getContentLink : Test {
@@ -140,16 +173,16 @@ sub test_Document_getLatestVersion : Test(5) {
   note("versionLabel=$versionLabel");
   is("1.0", $versionLabel);
 
-  my $pwc = $doc->checkOut;
-  $pwc->checkIn("this is a major checkin time=".time);
+  $doc->checkOut;
+  $doc->checkIn("this is a major checkin time=".time);
 
   $doc = $doc->getLatestVersion;
   $versionLabel = $doc->getProperty("cmis:versionLabel");
   note("latest versionLabel=$versionLabel");
   is("2.0", $versionLabel);
 
-  $pwc = $doc->checkOut;
-  $pwc->checkIn("this is a minor test checkin time=".time, major=>0);
+  $doc->checkOut;
+  $doc->checkIn("this is a minor test checkin time=".time, major=>0);
 
   $doc = $doc->getLatestVersion;
   $versionLabel = $doc->getProperty("cmis:versionLabel");
@@ -310,4 +343,5 @@ sub test_Document_getRenditionLink : Test(5) {
   $link = $obj->getRenditionLink(kind=>"icon", height=>11234020);
   ok(!defined $link);
 }
+
 1;

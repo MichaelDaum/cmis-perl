@@ -42,7 +42,7 @@ sub _initData {
   undef $this->{renditions};
 }
 
-=item checkOut() -> L<$document|WebService::Cmis::Document>
+=item checkOut() -> $this
 
 performs a checkOut on this document and returns the
 Private Working Copy (PWC), which is also an instance of
@@ -80,9 +80,10 @@ sub checkOut {
 
   # now that the doc is checked out, we need to refresh the XML
   # to pick up the prop updates related to a checkout
-  $this->reload;
+  $this->{xmlDoc} = $result;
+  $this->_initData;
 
-  return new WebService::Cmis::Document(repository=>$this->{repository}, xmlDoc=>$result);
+  return $this;
 }
 
 =item isCheckedOut() -> $boolean
@@ -161,7 +162,7 @@ sub cancelCheckOut {
   return $this;
 }
 
-=item checkIn($checkinComment, %params) -> L<$document|WebService::Cmis::Document>
+=item checkIn($checkinComment, %params) -> $this
 
 checks in this Document which must be a private
 working copy (PWC).
@@ -173,6 +174,10 @@ The following optional arguments are supported:
 =over 4
 
 =item * major
+
+=back
+
+These aren't supported:
 
 =item * properties
 
@@ -202,12 +207,15 @@ sub checkIn {
   my $url = $this->getSelfLink;
 
   my $result = $this->{repository}{client}->put($url, $entryXmlDoc->toString, ATOM_XML_TYPE, 
-    "checkin"=>'true', # SMELL: or is it CMIS-checkin
-    "checkinComment"=>$checkinComment, # SMELL: or is it CMIS-checkinComment
+    "checkin"=>'true', 
+    "checkinComment"=>$checkinComment, 
     @_
   );
 
-  return new WebService::Cmis::Document(repository=>$this->{repository}, xmlDoc=>$result);
+  # reload the current object with the result
+  $this->{xmlDoc} = $result;
+  $this->_initData;
+  return $this;
 }
 
 =item getContentLink(%params) -> $url
@@ -562,13 +570,79 @@ TODO: This is not yet implemented.
 
 sub getPropertiesOfLatestVersion { throw WebService::Cmis::NotImplementedException; }
 
-=item setContentStream
+=item setContentStream(%params) -> $this
 
-TODO: This is not yet implemented.
+This sets the content stream of a document.
+
+The following parameters are supported:
+
+=over 4
+
+=item * contentFile: the absolute path to the file to be used.
+
+=item * contentData: the data to be posted to the documents content stream link.
+use either C<contentFile> or C<contentData>. 
+
+=item * contentType: the mime type of the data. will be guessed automatically if not specified manually.
+
+=item * overwriteFlag: if 'true' (default), replace the existing content stream.
+if 'false', set the input contentStream if the object currently does not have a content-stream.
+
+=item * changeToken
+
+See CMIS specification document 2.2.4.16 setContentStream
 
 =cut
 
-sub setContentStream { throw WebService::Cmis::NotImplementedException; }
+sub setContentStream { 
+  my $this = shift;
+  my %params = @_;
+
+  my $contentFile = delete $params{contentFile};
+  my $contentData = delete $params{contentData};
+  my $contentType = delete $params{contentType};
+
+  unless (defined $contentData) {
+    my $fh;
+
+    open($fh, '<', $contentFile) 
+      or throw Error::Simple("can't open file $contentFile"); # SMELL: use a custom exception
+
+    local $/ = undef;# set to read to EOF
+    $contentData = <$fh>;
+    close($fh);
+    $contentData = '' unless $contentData; # no undefined
+  }
+
+  unless (defined $contentType) {
+
+    # get the file mage used for checking
+    require File::MMagic;
+    my $fileMage = new File::MMagic;
+
+    $contentType = $fileMage->checktype_contents($contentData);
+
+    # contentType fallback
+    $contentType = 'application/binary' unless defined $contentType;
+  }
+
+  # SMELL: not sure whether we need to encode or not
+  #require MIME::Base64;
+  #$contentData = MIME::Base64::encode_base64($contentData);
+
+  my $url = $this->getContentLink;
+  my $result = $this->{repository}{client}->put($url, $contentData, $contentType, %params) || '';
+
+  # reload with this result
+  if (defined $result && $result ne '') {
+    $this->{xmlDoc} = $result;
+    $this->_initData;
+  } else {
+    $this->reload;
+  }
+
+  return $this;
+}
 
 =item deleteContentStream
 
