@@ -54,13 +54,13 @@ SHA1 0e1206c4e645e77f679db7395b4c7e5fdf9d6c65 lib/WebService/Cmis/AtomFeed/Chang
 SHA1 c7f71e6ea12cc31d9766f43171fd065b0c56f008 lib/WebService/Cmis/AtomFeed/ObjectTypes.pm
 SHA1 c7f63942cbc7ad1848c59912d7ba669390216d32 lib/WebService/Cmis/AtomFeed/Objects.pm
 SHA1 f1fa0c37b98d5713882f4736007b550bc8ee426f lib/WebService/Cmis/ChangeEntry.pm
-SHA1 9f09968cc57922d841a28a145acd9207b8865c9c lib/WebService/Cmis/Client.pm
+SHA1 aa6d861dd9540feae3676b837f71ceea08da1e7f lib/WebService/Cmis/Client.pm
 SHA1 b375c389ab0cc30a05f733eb4f99d709b5f034d2 lib/WebService/Cmis/ClientException.pm
 SHA1 2bd2b1b135040360ab650cf82b071fd6271fa6a3 lib/WebService/Cmis/Document.pm
 SHA1 4f64a574fd13444c9ccfb6eb2e91e956e117235e lib/WebService/Cmis/Folder.pm
 SHA1 43971364b5925648c9c737947bd8fac9270dfc93 lib/WebService/Cmis/NotImplementedException.pm
 SHA1 a52c47f8ad74e1f68a4a35598d4c76faaa353d29 lib/WebService/Cmis/NotSupportedException.pm
-SHA1 66459d9f599f1743db01ceed933d945bc73954b2 lib/WebService/Cmis/Object.pm
+SHA1 dbb862ff31ca42c60ad64dbd7755690762469139 lib/WebService/Cmis/Object.pm
 SHA1 fc133f02b03b41fa352c6b4294f240c5da343c3e lib/WebService/Cmis/ObjectType.pm
 SHA1 cfbaf2ab10507df45cec1a1ac54f55cc0b8ea954 lib/WebService/Cmis/Policy.pm
 SHA1 ad9587a666bacff6a06827e12c430676568d4edb lib/WebService/Cmis/Property.pm
@@ -72,7 +72,7 @@ SHA1 21204fff98f2de23dcf8beb103659526d31853fd lib/WebService/Cmis/Property/Integ
 SHA1 5be26b9b80f667e94d98181ad51e1b46bd265f98 lib/WebService/Cmis/Property/String.pm
 SHA1 d46ffd703d68aadf949863d47db90dfa596e2b18 lib/WebService/Cmis/PropertyDefinition.pm
 SHA1 679a05c140fd632bf845d1d6eef9ac045b6ef2d1 lib/WebService/Cmis/Relationship.pm
-SHA1 3add8fa83d83518ad71c55dd84c35a09596d0d10 lib/WebService/Cmis/Repository.pm
+SHA1 792d415a82f4341fd573b1a27f46cae57a4e77e5 lib/WebService/Cmis/Repository.pm
 SHA1 cda23db4a3ec536829f4d3e31de96c526c1d3870 lib/WebService/Cmis/ServerException.pm
 SHA1 7087acf319a86f70d0cf4e59fe626d5635c5a034 t/00-load.t
 SHA1 3ec6171779122b0bdc69937c283be11b2a15dd89 t/00-signature.t
@@ -95,11 +95,11 @@ SHA1 a284683173bea40e9e4679c1a044700443f8a333 t/pod.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQEcBAEBAgAGBQJQPIg3AAoJEFbHzikUeAidzgwH/3uxV5meCa2amc6zaM4aacqA
-EZ/nFa9zcOcLOW21bvAO7IzqSvnS2Ig3n5i7c003Nq/l+5vSaOrTLd1WEABg89Oh
-13/Ry2j2vdJhPTRCEjSchXM66d56mkik9Vn/d5gx/11IMz7DKGFmoQeAsIuZXOod
-6MytjyHGBrF3c0DtS1nUIU/KaaMKw45n4m53abHsZAp25cQF4UdH5iCxKV7ya/Lo
-19+m4X+MJNLdnjuiXG2qdUtijVsqd856P0rq3havAaluuhwLKOJHzzypqCqKi95t
-nL30qC9yb3hERIX6mT1g5zjrvu77VDGS+tqWtF987X8FQIytlcCJrKW5Zhj0dLs=
-=H3Cs
+iQEcBAEBAgAGBQJQPK7uAAoJEFbHzikUeAidn4QIAIJX4EnVRTogGDymuF9vfD5B
+f4cM/VVHAzufxwh5qnpDYTAPCCYHS47xBkYNicCLi/hJxlpTx2dlujkpng3vNpeQ
+eC4qKPjAU41Rg0fvcbvwVSoaa6KEoFsqO1KrzT4cjSyiFEGVC6Wx89Q3s5DnXA4F
+iFB53tM/58bVdA2VPXEz9mfBRoIfQazfM8ElLZ0d3RCD6uhF2/j/Ywg8jUk4UvcT
+nFk8wWy36Fe4vtPpkHfZgBRRvDOLZm4cftulSb5aELNVVclhn5mvHQwIlDZMus9U
+ITfkhyQ3n2+6twKJRNanGzsK3PSJtlJ0hwAzayWliku4LKdZXXibba1shpGipFw=
+=Sqgb
 -----END PGP SIGNATURE-----

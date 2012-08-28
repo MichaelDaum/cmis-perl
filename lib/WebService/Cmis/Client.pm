@@ -42,8 +42,6 @@ use Storable ();
 use Digest::MD5  ();
 use Error qw(:try);
 
-our $cacheHits = 0;
-
 our @ISA = qw(REST::Client);
 
 =head1 METHODS
@@ -85,6 +83,7 @@ sub new {
   my $user = delete $params{user};
   my $repositoryUrl = delete $params{url} || '';
   my $cache = delete $params{cache};
+  my $overrideCacheControl = delete $params{overrideCacheControl};
 
   if (defined $password && defined $user) {
     $params{useragent} = new BasicAuthAgent($user, $password);  
@@ -94,7 +93,9 @@ sub new {
   my $this = $class->SUPER::new(%params);
 
   $this->{cache} = $cache;
+  $this->{overrideCacheControl} = $overrideCacheControl;
   $this->{repositoryUrl} = $repositoryUrl;
+  $this->{_cacheHits} = 0;
 
   return $this;
 }
@@ -106,7 +107,7 @@ sub DESTROY {
   undef $this->{repositories};
   undef $this->{defaultRepository};
 
-  writeCmisDebug("$cacheHits cache hits found") if $this->{cache};
+  writeCmisDebug($this->{_cacheHits}." cache hits found") if $this->{cache};
 }
 
 =item toString
@@ -272,7 +273,7 @@ sub request {
 
   if($this->{_cacheEntry} = $this->_cacheGet($url)) {
     writeCmisDebug("found in cache");
-    $cacheHits++;
+    $this->{_cacheHits}++;
     return $this;
   }
 
@@ -286,7 +287,8 @@ sub request {
   my $code = $this->responseCode;
   
   my $cacheControl = $this->{_res}->header("Cache-Control") || '';
-  writeCmisDebug("cacheControl = $cacheControl");
+  #writeCmisDebug("cacheControl = $cacheControl");
+  $cacheControl = '' if $this->{overrideCacheControl};
   if ($cacheControl ne 'no-cache' && $code >= 200 && $code < 300 && $this->{cache}) {
     my $cacheEntry = {
       content => $this->{_res}->content,
@@ -532,6 +534,21 @@ sub getRepository {
   $this->getRepositories;
   return $this->{defaultRepository} unless defined $id;
   return $this->{repositories}{$id};
+}
+
+=item getCacheHits() -> $num
+
+returns the number of times a result has been fetched from the cache
+instead of accessing the CMIS backend. returns undefined when no cache
+is configured
+
+=cut
+
+sub getCacheHits {
+  my $this = shift;
+
+  return unless defined $this->{cache};
+  return $this->{_cacheHits};
 }
 
 # private version of a user agent for for basic auth
