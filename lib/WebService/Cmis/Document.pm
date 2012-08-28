@@ -179,6 +179,8 @@ The following optional arguments are supported:
 
 These aren't supported:
 
+=over 4
+
 =item * properties
 
 =item * contentStream
@@ -589,6 +591,8 @@ use either C<contentFile> or C<contentData>.
 if 'false', set the input contentStream if the object currently does not have a content-stream.
 
 =item * changeToken
+
+=back
 
 See CMIS specification document 2.2.4.16 setContentStream
 
