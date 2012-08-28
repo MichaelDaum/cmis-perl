@@ -333,7 +333,7 @@ See CMIS specification document 3.4.3.1 Existing Link Relations
 =cut
 
 sub getEditLink {
-  return $_[0]->getLink(EDIT_REL);
+  return $_[0]->getLink(EDIT_MEDIA_REL);
 }
 
 =item getAppliedPolicies(%params) -> $atomFeed

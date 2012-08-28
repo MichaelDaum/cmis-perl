@@ -45,7 +45,7 @@ SHA1 8271611f5c7f9b6e16ef5075353f3b22a72de906 inc/WebService/Cmis/Test/ObjectTyp
 SHA1 748be64b3d0f2bd904dd45c0cc6e8bf79267cfa4 inc/WebService/Cmis/Test/Property.pm
 SHA1 76c1d2cb7a5d583a454bfd123f7daf704d0a665b inc/WebService/Cmis/Test/Repository.pm
 SHA1 ec5c824a0a45ce3972fa91e2d2f42b9756fc6aa2 inc/cmis.cfg.example
-SHA1 aaf248a0cc4328166c9675df678fde5f573dd590 lib/WebService/Cmis.pm
+SHA1 a58c6a898b1ca7c9bc891b8f2c3ff0d73ebf4274 lib/WebService/Cmis.pm
 SHA1 4efd307e6faa70ef2e2f7bbe47e484d5840ca4ea lib/WebService/Cmis/ACE.pm
 SHA1 fabbeba51b3f02ef652841cee9c65cf97e4154c0 lib/WebService/Cmis/ACL.pm
 SHA1 55646c5b446c2b9271353502f8450a16b9478dd6 lib/WebService/Cmis/AtomEntry.pm
@@ -60,7 +60,7 @@ SHA1 2bd2b1b135040360ab650cf82b071fd6271fa6a3 lib/WebService/Cmis/Document.pm
 SHA1 4f64a574fd13444c9ccfb6eb2e91e956e117235e lib/WebService/Cmis/Folder.pm
 SHA1 43971364b5925648c9c737947bd8fac9270dfc93 lib/WebService/Cmis/NotImplementedException.pm
 SHA1 a52c47f8ad74e1f68a4a35598d4c76faaa353d29 lib/WebService/Cmis/NotSupportedException.pm
-SHA1 b6c608871f15a0ea13e697f3d2209c8b3dd916b2 lib/WebService/Cmis/Object.pm
+SHA1 66459d9f599f1743db01ceed933d945bc73954b2 lib/WebService/Cmis/Object.pm
 SHA1 fc133f02b03b41fa352c6b4294f240c5da343c3e lib/WebService/Cmis/ObjectType.pm
 SHA1 cfbaf2ab10507df45cec1a1ac54f55cc0b8ea954 lib/WebService/Cmis/Policy.pm
 SHA1 ad9587a666bacff6a06827e12c430676568d4edb lib/WebService/Cmis/Property.pm
@@ -95,11 +95,11 @@ SHA1 a284683173bea40e9e4679c1a044700443f8a333 t/pod.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQEcBAEBAgAGBQJQO60FAAoJEFbHzikUeAidlysH/iPElnFUrSrwnCU4NY2GaFNc
-M6GEHa+jFqtqWNVFBoZ4FrWDuwLsQmb2vxFiKiWb+S96cE2cNZrqDN3dqw1EFAsE
-hDWr3BehTO2jtrlVCmAseu1zRaMbDPgvOmIEuYY4bmVxJwXrVvv/ej1DIGjuItau
-RzRaX2f6Yb/tlawzLrHPkiaCLwwnJHuY5qB6Ku5/gfKP06euFHg5uWCV7lEa6paD
-PIgvc86LBevqPMJTfod5Z+7UEYd6jDEesNW2ZIvDk7PQw5MoPm14nILWZWb5uzlt
-itFl02XZ9XAqahxTQ6DD/H6FqpAiLhCALxdxh61qyHr2TRFPblrosAhYqLhaGlU=
-=o0Fl
+iQEcBAEBAgAGBQJQPIg3AAoJEFbHzikUeAidzgwH/3uxV5meCa2amc6zaM4aacqA
+EZ/nFa9zcOcLOW21bvAO7IzqSvnS2Ig3n5i7c003Nq/l+5vSaOrTLd1WEABg89Oh
+13/Ry2j2vdJhPTRCEjSchXM66d56mkik9Vn/d5gx/11IMz7DKGFmoQeAsIuZXOod
+6MytjyHGBrF3c0DtS1nUIU/KaaMKw45n4m53abHsZAp25cQF4UdH5iCxKV7ya/Lo
+19+m4X+MJNLdnjuiXG2qdUtijVsqd856P0rq3havAaluuhwLKOJHzzypqCqKi95t
+nL30qC9yb3hERIX6mT1g5zjrvu77VDGS+tqWtF987X8FQIytlcCJrKW5Zhj0dLs=
+=H3Cs
 -----END PGP SIGNATURE-----

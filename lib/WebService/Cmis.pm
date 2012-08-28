@@ -60,7 +60,7 @@ our @_contenttypes = qw(ATOM_XML_TYPE ATOM_XML_ENTRY_TYPE ATOM_XML_ENTRY_TYPE_P
   CMIS_QUERY_TYPE CMIS_ACL_TYPE);
 
 our @_relations = qw(ACL_REL ALTERNATE_REL CHANGE_LOG_REL DESCRIBEDBY_REL
-  DOWN_REL EDIT_META_REL EDIT_REL FIRST_REL FOLDER_TREE_REL LAST_REL NEXT_REL
+  DOWN_REL EDIT_MEDIA_REL EDIT_REL FIRST_REL FOLDER_TREE_REL LAST_REL NEXT_REL
   POLICIES_REL PREV_REL RELATIONSHIPS_REL ROOT_DESCENDANTS_REL SELF_REL
   SERVICE_REL TYPE_DESCENDANTS_REL UP_REL VERSION_HISTORY_REL VIA_REL);
 
@@ -102,7 +102,7 @@ use constant CMIS_ACL_TYPE => 'application/cmisacl+xml';
 use constant ALTERNATE_REL => 'alternate';
 use constant DESCRIBEDBY_REL => 'describedby';
 use constant DOWN_REL => 'down';
-use constant EDIT_META_REL => 'edit-meta';
+use constant EDIT_MEDIA_REL => 'edit-media';
 use constant EDIT_REL => 'edit';
 use constant FIRST_REL => 'first';
 use constant LAST_REL => 'last';
