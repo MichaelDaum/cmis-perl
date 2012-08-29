@@ -258,7 +258,13 @@ sub getProperty {
 
 =item getAllowableActions() -> %allowableActions
 
-returns a dictionary of allowable actions, keyed off of the action name.
+returns a hash of allowable actions, keyed off of the action name.
+
+  my $allowableActions = $obj->getAllowableActions;
+  while (my ($action, $booleanFlag) = each %$allowableActions) {
+    print "$action=$booleanFlag\n";
+  }
+
 See CMIS specification document 2.2.4.6 getAllowableActions
 
 =cut
