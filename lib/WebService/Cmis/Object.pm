@@ -43,7 +43,7 @@ our %classOfBaseTypeId = (
   'cmis:policy' => 'WebService::Cmis::Policy',
 );
 
-our $CMIS_XPATH_PROPERTIES = new XML::LibXML::XPathExpression('./*[local-name()="object" and namespace-uri()="'.CMISRA_NS.'"]/*[local-name()="properties" and namespace-uri()="'.CMIS_NS.'"]/*[@propertyDefinitionId]');
+our $CMIS_XPATH_PROPERTIES = new XML::LibXML::XPathExpression('./*[local-name()="object" and namespace-uri()="'.CMISRA_NS.'"]/*[local-name()="properties" and namespace-uri()="'.CMIS_NS.'"]//*[@propertyDefinitionId]');
 our $CMIS_XPATH_ALLOWABLEACTIONS = new XML::LibXML::XPathExpression('./*[local-name() = "object" and namespace-uri()="'.CMISRA_NS.'"]/*[local-name() = "allowableActions" and namespace-uri() ="'.CMIS_NS.'"]');
 
 =head1 METHODS
@@ -206,7 +206,7 @@ sub getTypeId {
   return $_[0]->getProperty("cmis:objectTypeId");
 }
 
-=item getProperties() -> %properties;
+=item getProperties($filter) -> %properties;
 
 returns a hash of the object's L<properties|WebService::Cmis::Property>. If
 CMIS returns an empty element for a property, the property will be in the hash
