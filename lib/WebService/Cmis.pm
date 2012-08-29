@@ -49,7 +49,7 @@ use Exporter qw(import);
 use Carp;
 $Carp::Verbose = 1;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 our @ISA = qw(Exporter);
 

@@ -1,5 +1,52 @@
-Revision history for WebService-Cmis
+Revision history for WebService-Cmis:
 
-0.01    Date/time
-        First version, released on an unsuspecting world.
+2012-08-29 MichaelDaum <github@michaeldaumconsulting.com>
+
+	 * pick up proprietary properties as well
+	 * added example code to getAllowableActions()
+
+2012-08-28 MichaelDaum <github@michaeldaumconsulting.com>
+
+	 * fixed pod
+	 * implemented setContentStream
+	 * improved caching; allowing to override cache-control
+	 * this is called edit-media, not edit-meta
+
+2012-08-27 MichaelDaum <github@michaeldaumconsulting.com>
+
+	 * fixed pod, fixed example configuration
+	 * added getEditLink, getLast, some missing relations
+
+2012-08-24 MichaelDaum <github@michaeldaumconsulting.com>
+
+	 * update signatore
+	 * removing useless object type mapping
+	 * too many ignore thingies
+	 * updating signature
+	 * improved tests and pod docu
+
+2012-08-23 MichaelDaum <github@michaeldaumconsulting.com>
+
+	 * added tests applying ACLs to objects
+	 * fixing link to xcmis test host
+	 * re-adding test suite
+
+2012-08-22 MichaelDaum <github@michaeldaumconsulting.com>
+
+	 * fixed copyright notions and acknowledegments
+	 * added pod for interfaces not yet implemented
+	 * removing pod markup from readme
+	 * Fixed distro files, removed private REST::Client
+
+2012-08-21 MichaelDaum <github@michaeldaumconsulting.com>
+
+	 * converted to Test::Class
+
+2012-03-16 Michael Daum <github@michaeldaumconsulting.com>
+
+	 * checking in existing unit tests
+	 * fixing pod unit tests
+	 * boilerplate content
+	 * boilerplate and initial checkin
+	 * first commit
 

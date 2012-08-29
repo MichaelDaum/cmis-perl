@@ -12,3 +12,4 @@ ignore.txt$
 \.tar.gz$
 \.bak$
 ^WebService\-Cmis\-\d\.\d\d/
+^tools/git2changelog$

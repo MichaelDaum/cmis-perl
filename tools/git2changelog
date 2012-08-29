@@ -1,0 +1,26 @@
+#!/usr/bin/perl
+
+my %changes = ();
+my %dates = ();
+my %emails = ();
+
+my $logs=`git --no-pager log --no-merges --date=short --format="'%ad' '%an' '%ae' '%s'"`;
+
+while ($logs =~ /^'(.*)' '(.*)' '(.*)' '\s*(.*?)\s*'$/gm) {
+  my $date = $1;
+  my $name = $2;
+  my $email = $3;
+  my $msg = $4;
+
+  $emails{$name} = $email;
+  $dates{$date} = 1;
+
+  push @{$changes{$date}{$name}}, $msg;
+}
+
+print "Revision history for WebService-Cmis:\n\n";
+foreach my $date (reverse sort keys %dates) {
+  foreach my $name (sort keys %{$changes{$date}}) {
+    print "$date $name <$emails{$name}>\n\n\t * ".join("\n\t * ", @{$changes{$date}{$name}})."\n\n";
+  }
+}

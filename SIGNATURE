@@ -14,9 +14,9 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 6a69b039a238a0272284e4c9ee7d1b29c4798218 Changes
+SHA1 7aa00e4036b3b0748531ba7436b21c8fcf7a4b29 Changes
 SHA1 b7725aa322a04f09f20980fd151d78f9babdd965 MANIFEST
-SHA1 970540450aa79cecea47d0d9f1ffc7dbae8b94be MANIFEST.SKIP
+SHA1 c848e901d3c945d92a788e89ef840ea47fba105a MANIFEST.SKIP
 SHA1 a7afe7cf166d8fcc3e294303b17c8fe76f3aa08b META.yml
 SHA1 54bdda924b3584d65e3c4ed3be6cc5d1e6776de1 Makefile.PL
 SHA1 ef01906c6da51f3d5224c49885ee83664feb5f8a README
@@ -45,7 +45,7 @@ SHA1 8271611f5c7f9b6e16ef5075353f3b22a72de906 inc/WebService/Cmis/Test/ObjectTyp
 SHA1 748be64b3d0f2bd904dd45c0cc6e8bf79267cfa4 inc/WebService/Cmis/Test/Property.pm
 SHA1 76c1d2cb7a5d583a454bfd123f7daf704d0a665b inc/WebService/Cmis/Test/Repository.pm
 SHA1 ec5c824a0a45ce3972fa91e2d2f42b9756fc6aa2 inc/cmis.cfg.example
-SHA1 a58c6a898b1ca7c9bc891b8f2c3ff0d73ebf4274 lib/WebService/Cmis.pm
+SHA1 1ab844b9acdb7015815d7f982a07ee7c6ed195bc lib/WebService/Cmis.pm
 SHA1 4efd307e6faa70ef2e2f7bbe47e484d5840ca4ea lib/WebService/Cmis/ACE.pm
 SHA1 fabbeba51b3f02ef652841cee9c65cf97e4154c0 lib/WebService/Cmis/ACL.pm
 SHA1 55646c5b446c2b9271353502f8450a16b9478dd6 lib/WebService/Cmis/AtomEntry.pm
@@ -95,11 +95,11 @@ SHA1 a284683173bea40e9e4679c1a044700443f8a333 t/pod.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQEcBAEBAgAGBQJQPmdyAAoJEFbHzikUeAidNSAH/AsLe/RM6Mrr1ATISLfb1j8j
-hhksfBugQGHkahbBxWkNTdMjNnC4z8YB1Dnt9qwXJcbB5d1/u+ZYY3pRZW0a111M
-z++Y56nfvdHjzglovJceAuz9oatBLV7gj35OkO88NB/JUua1aS2HhNr0MP0ZRlRM
-Z/c3x5UAaiZkJ/wHcIGV2aAuPGr+5NsfLDhlS/E9oxe0EQDbUxLvzuHJ4YQr4bFc
-hvn3V+4yOOhXkH+c3RjD/Fm1LQtaVLMIcPaj73Xy2lDOpQT8GlvT1BYA4y3YdWjt
-/4blwhTjiz5WaZa/kZI/JpkWWHzNjecK8/br8g4ud50s+4v5NtwGELVSN1vDzI0=
-=EquH
+iQEcBAEBAgAGBQJQPoNyAAoJEFbHzikUeAidmFcIAIMrmZ+ybZUJ5QI9ccDMjmb5
+BGd0NcvfQdy3bSyiTAEbVsBNqyM+3R13+UlS+LIJExNuPiEBXFXzkZant3/GFnxY
+7fFrapIcuV9ot5EJVRGAQNlcw4mxSdoiC++3f0kkqt3QIB4BCOM3einfrDEHxD2V
+aB0h79379vth5NYr5iZDZ+RFkk4vEdoSMCGO8/+nZwfgg4GkHJu0WYRNzqkQqNqd
+YmvTEWcAxU9uVi40C7zMqf7wjNlEghJ3JUp2Tnvtm9LLwnkWg7csAI5stDrJnurh
+Acp8VBZj/cF7hc2wTJQIEXfxB1M5zK/rC8SKrT5kEJnveDWpMQikvgqL/qO8adI=
+=0Ntp
 -----END PGP SIGNATURE-----
