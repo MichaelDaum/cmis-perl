@@ -1,20 +1,33 @@
 #!/usr/bin/perl
 
+use strict;
+use warnings;
+
 my %changes = ();
 my %dates = ();
 my %emails = ();
 
-my $logs=`git --no-pager log --no-merges --date=short --format="'%ad' '%an' '%ae' '%s'"`;
+my $logs=`git --no-pager log --no-merges --date=short --format="date='%ad' name='%an' email='%ae' subject='%s' body='%b'"`;
 
-while ($logs =~ /^'(.*)' '(.*)' '(.*)' '\s*(.*?)\s*'$/gm) {
+#print "logs=\n$logs\n";
+
+while ($logs =~ /date='(.*?)' name='(.*?)' email='(.*?)' subject='(.*?)' body='\s*(.*?)\s*'/gms) {
   my $date = $1;
   my $name = $2;
   my $email = $3;
-  my $msg = $4;
+  my $subject = $4;
+  my $body = $5;
+
+  $body =~ s/^/\t   /gm;
+  $body =~ s/\n\s*?\n/\n/gm;
+  $body =~ s/^(\s*)\*/$1\-/gm;
 
   $emails{$name} = $email;
   $dates{$date} = 1;
 
+  my $msg = $subject;
+  $msg .= "\n".$body if $body;
+  $msg =~ s/\s*$//m;
   push @{$changes{$date}{$name}}, $msg;
 }
 
