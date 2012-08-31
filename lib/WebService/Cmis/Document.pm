@@ -155,8 +155,7 @@ sub cancelCheckOut {
   my $this = shift;
 
   my $pwcDoc = $this->getPrivateWorkingCopy;
-  return unless defined $pwcDoc;
-  $pwcDoc->delete;
+  $pwcDoc->delete if defined $pwcDoc;
   $this->reload;
 
   return $this;

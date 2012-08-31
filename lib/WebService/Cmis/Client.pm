@@ -169,6 +169,22 @@ sub purgeCache {
   return $cache->purge(@_);
 }
 
+=item removeFromCache($path, %params)
+
+removes an item from the cache associated with the given path
+and url parameters
+
+=cut
+
+sub removeFromCache {
+  my $this = shift;
+  my $path = shift;
+
+  my $uri = _getUri($path, @_);
+  writeCmisDebug("removing from cache $uri");
+  return $this->_cacheRemove($uri);
+}
+
 # internal cache layer
 sub _cacheGet {
   my $this = shift;
@@ -209,7 +225,7 @@ sub _cacheKey {
   return _untaint(Digest::MD5::md5_hex(Data::Dumper::Dumper($_[0])));
 }
 
-=item get($path) 
+=item get($path, %params) 
 
 does a get against the CMIS service. More than likely, you will not
 need to call this method. Instead, let the other objects to it for you.
@@ -235,7 +251,7 @@ sub get {
   }
 
   my $uri = _getUri($url, @_);
-  writeCmisDebug("called get($uri)");
+  #writeCmisDebug("called get($uri)");
 
   # do it
   $this->GET($uri);
@@ -269,13 +285,12 @@ sub request {
   my $method = shift;
   my $url = shift;
 
-  #print STDERR "url=$url\n";
-
   if($this->{_cacheEntry} = $this->_cacheGet($url)) {
-    writeCmisDebug("found in cache");
+    writeCmisDebug("found in cache: $url");
     $this->{_cacheHits}++;
     return $this;
   }
+  writeCmisDebug("request url=$url");
 
   my $result = $this->SUPER::request($method, $url, @_);
 
@@ -396,6 +411,9 @@ sub post {
 
   # do it
   $this->POST($url, $payload, \%params);
+
+  # auto clear the cache
+  $this->clearCache;
 
   my $code = $this->responseCode;
   return $this->_parseResponse if $code >= 200 && $code < 300;

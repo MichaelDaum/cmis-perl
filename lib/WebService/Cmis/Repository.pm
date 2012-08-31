@@ -837,9 +837,6 @@ sub createObject {
   # build the Atom entry
   my $xmlDoc = $this->createEntryXmlDoc(folder=>$parentFolder, @_);
 
-  # auto-clear cache
-  #$this->{client}->clearCache;
-
   # post the Atom entry
   my $result = $this->{client}->post($postUrl, $xmlDoc->toString, ATOM_XML_ENTRY_TYPE);
 

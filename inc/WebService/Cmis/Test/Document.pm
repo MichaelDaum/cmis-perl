@@ -32,7 +32,6 @@ sub _saveFile {
   close($FILE);
 }
 
-
 sub test_Document_getAllVersions : Tests {
   my $this = shift;
   my $repo = $this->getRepository;
@@ -163,7 +162,7 @@ sub test_Document_getContentLink : Test {
   ok(defined $contentLink) or diag("can't get content link for test file");
 }
 
-sub test_Document_getLatestVersion : Test(5) {
+sub test_Document_getLatestVersion : Test(7) {
   my $this = shift;
   my $repo = $this->getRepository;
 
@@ -173,8 +172,15 @@ sub test_Document_getLatestVersion : Test(5) {
   note("versionLabel=$versionLabel");
   is("1.0", $versionLabel);
 
+  my $beforeCheckedOutDocs = $repo->getCheckedOutDocs->getSize;
+  note("beforeCheckedOutDocs=$beforeCheckedOutDocs");
+
   $doc->checkOut;
+
+  is($repo->getCheckedOutDocs->getSize, $beforeCheckedOutDocs+1) or diag("checked out queue should be increasing");
+
   $doc->checkIn("this is a major checkin time=".time);
+  is($repo->getCheckedOutDocs->getSize, $beforeCheckedOutDocs) or diag("checked out queue the same as before");
 
   $doc = $doc->getLatestVersion;
   $versionLabel = $doc->getProperty("cmis:versionLabel");
@@ -194,8 +200,7 @@ sub test_Document_getLatestVersion : Test(5) {
   note("latest major versionLabel=$versionLabel");
   is("2.0", $versionLabel);
 
-  my $checkedOutDocs = $repo->getCheckedOutDocs;
-  ok($checkedOutDocs->getSize == 0) or diag("checked out queue should be empty");
+  is($repo->getCheckedOutDocs->getSize, $beforeCheckedOutDocs) or diag("checked out queue the same as before");
 }
 
 sub test_Document_moveTo : Test(4) {
@@ -343,5 +348,44 @@ sub test_Document_getRenditionLink : Test(5) {
   $link = $obj->getRenditionLink(kind=>"icon", height=>11234020);
   ok(!defined $link);
 }
+
+sub test_Document_checkOut_cancelCheckOut : Test(8) {
+  # SMELL: skip some when there is no support for pwc
+
+  my $this = shift;
+
+  my $repo = $this->getRepository;
+  my $obj = $this->getTestDocument;
+
+  my $id1 = $obj->getId;
+  note("id1=$id1");
+
+  my $pwc = $obj->getPrivateWorkingCopy;
+  ok(!defined $pwc) or diag("oops, we didn't check it out yet, so there shouldn't be a pwc yet");
+
+  $obj->checkOut;
+  my $id2 = $obj->getId;
+  note("id2=$id2");
+  is($id1, $id2);
+  ok($repo->getObject($id1));
+
+  $pwc = $obj->getPrivateWorkingCopy;
+  ok(defined $pwc) or diag("oops, where's my pwc");
+  my $id3 = $obj->getId;
+  note("id3=$id3");
+  is($id1, $id3);
+
+  my $pwcId = $pwc->getId;
+  note("pwcId=".$pwcId);
+  isnt($obj->getId, $pwc->getId) or diag("document id should be different from pwc id");
+
+  $obj->cancelCheckOut;
+  my $id4 = $obj->getId;
+  note("id4=".$id4);
+  ok($repo->getObject($id1));
+  ok(!defined $repo->getObject($pwcId)) or diag("pwc should been gone by now");
+}
+
+
 
 1;

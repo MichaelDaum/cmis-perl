@@ -153,7 +153,7 @@ sub reload {
   $byObjectIdUrl =~ s/{renditionFilter}/$params{renditionFilter}||''/ge;
 
   # auto clear cache
-  #$this->{repository}{client}->clearCache;
+  #$this->{repository}{client}->removeFromCache($byObjectIdUrl, %{$this->{extra_params}});
   
   $this->{xmlDoc} = $this->{repository}{client}->get($byObjectIdUrl, %{$this->{extra_params}});
   $this->_initData;
