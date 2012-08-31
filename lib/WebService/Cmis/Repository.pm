@@ -701,7 +701,7 @@ sub createEntryXmlDoc {
         
   $xmlDoc->setDocumentElement($entryElement);
 
-  if ($params{summary}) {
+  if (defined $params{summary}) {
     my $summaryElement = $entryElement->addNewChild(ATOM_NS, "summary");
     $summaryElement->addChild($xmlDoc->createTextNode($params{summary}));
   }
@@ -768,7 +768,7 @@ sub createEntryXmlDoc {
   my $objectElement = $entryElement->addNewChild(CMISRA_NS,'cmisra:object');
   $objectElement->addChild($xmlDoc->createAttribute('xmlns:cmis', CMIS_NS));
 
-  if ($params{properties}) {
+  if (defined $params{properties}) {
     my $propsElement = $objectElement->addNewChild(CMIS_NS, 'cmis:properties');
     
     foreach my $property (@{$params{properties}}) {
@@ -787,7 +787,7 @@ sub createEntryXmlDoc {
   }
 
   # add folderId
-  if ($params{folder}) {
+  if (defined $params{folder}) {
     my $folderElement = $objectElement->addNewChild(CMIS_NS, 'cmis:folderId');
     $folderElement->addChild($xmlDoc->createTextNode($params{folder}->getId));
   }
@@ -800,10 +800,7 @@ sub createEntryXmlDoc {
   return $xmlDoc;
 }
 
-=item createObject(
-  $parentFolder, 
-  properties => $propertyList,
-  %params);
+=item createObject($parentFolder, properties => $propertyList, %params);
 
 creates a new CMIS Objec in the given folder using 
 the properties provided.
@@ -1129,11 +1126,8 @@ sub createDocument {
   );
 }
 
-=item createFolder(
-  $name, 
-  folder=>$parentFolder,
-  properties=>$propertyList
-  %params) -> $cmisFolder
+
+=item createFolder($name, folder=>$parentFolder, properties=>$propertyList, %params) -> $cmisFolder
 
 creates a new CMIS Folder using the properties provided.
 
@@ -1142,10 +1136,24 @@ cmis:objectTypeId representing the type ID
 of the instance you want to create. If you do not pass in an object
 type ID, an instance of 'cmis:folder' will be created.
 
+  my $rootFolder = $repo->getRootFolder;
+
+  my $subFolder = $rootFolder->createFolder(
+    'My new folder', 
+    summary => "This is my new test folder."
+  );
+
+  my $repo = $repo->createFolder(
+    'My other folder', 
+    folder => $rootFolder,
+    summary => "This is my other test folder."
+  );
+
+See CMIS specification document 2.2.4.3 createFolder
 
 =cut
 
-sub createFolder { 
+sub createFolder {
   my $this = shift;
   my $name = shift;
   my %params = @_;
@@ -1158,9 +1166,10 @@ sub createFolder {
   # construct properties
   require WebService::Cmis::Property;
 
-  push @$properties, WebService::Cmis::Property::newString(
-      id => 'cmis:name',
-      value => $name,
+  push @$properties,
+    WebService::Cmis::Property::newString(
+    id => 'cmis:name',
+    value => $name,
     );
 
   my $foundObjectTypeId = 0;
@@ -1172,16 +1181,17 @@ sub createFolder {
   }
 
   unless ($foundObjectTypeId) {
-    push @$properties, WebService::Cmis::Property::newId(
+    push @$properties,
+      WebService::Cmis::Property::newId(
       id => 'cmis:objectTypeId',
       value => 'cmis:folder',
-    );
+      );
   }
 
   # create the object
   return $this->createObject(
-    $parentFolder, 
-    properties=>$properties,
+    $parentFolder,
+    properties => $properties,
     %params,
   );
 }

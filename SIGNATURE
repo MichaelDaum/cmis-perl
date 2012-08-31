@@ -14,7 +14,7 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 bc6c1f8e2f546e5e8ba6e1ae3e4bd8a040f8cd55 Changes
+SHA1 ba84631208e9952c844a333541e0b5f6c6e9ccc0 Changes
 SHA1 b7725aa322a04f09f20980fd151d78f9babdd965 MANIFEST
 SHA1 c848e901d3c945d92a788e89ef840ea47fba105a MANIFEST.SKIP
 SHA1 a7afe7cf166d8fcc3e294303b17c8fe76f3aa08b META.yml
@@ -40,7 +40,7 @@ SHA1 174b3e05b64319257e762b6f7043bee185abd5b8 inc/WebService/Cmis/Test/Basics.pm
 SHA1 fb1dfc81891566ce01a866f86b8bc11a5673e0d6 inc/WebService/Cmis/Test/Client.pm
 SHA1 b1557999e27cdccaf23271bf8ed296dae8efd07f inc/WebService/Cmis/Test/Document.pm
 SHA1 17cbd765372d036a6392ba21223cab15e62ad16d inc/WebService/Cmis/Test/Folder.pm
-SHA1 3a0dfae9f8783f73c49b93f90b3240fdc4a457b0 inc/WebService/Cmis/Test/Object.pm
+SHA1 f40e6a371d8a4c8b35b25eac52c8f3e93c204a63 inc/WebService/Cmis/Test/Object.pm
 SHA1 8271611f5c7f9b6e16ef5075353f3b22a72de906 inc/WebService/Cmis/Test/ObjectType.pm
 SHA1 748be64b3d0f2bd904dd45c0cc6e8bf79267cfa4 inc/WebService/Cmis/Test/Property.pm
 SHA1 76c1d2cb7a5d583a454bfd123f7daf704d0a665b inc/WebService/Cmis/Test/Repository.pm
@@ -54,7 +54,7 @@ SHA1 0e1206c4e645e77f679db7395b4c7e5fdf9d6c65 lib/WebService/Cmis/AtomFeed/Chang
 SHA1 c7f71e6ea12cc31d9766f43171fd065b0c56f008 lib/WebService/Cmis/AtomFeed/ObjectTypes.pm
 SHA1 c7f63942cbc7ad1848c59912d7ba669390216d32 lib/WebService/Cmis/AtomFeed/Objects.pm
 SHA1 f1fa0c37b98d5713882f4736007b550bc8ee426f lib/WebService/Cmis/ChangeEntry.pm
-SHA1 098243e067131e532d150c30e931e3e27d1b9c21 lib/WebService/Cmis/Client.pm
+SHA1 d13786b3c891814a0e4d672a0eb456089e356b9a lib/WebService/Cmis/Client.pm
 SHA1 b375c389ab0cc30a05f733eb4f99d709b5f034d2 lib/WebService/Cmis/ClientException.pm
 SHA1 2ef5b91f89b155e500fa66d47cc8dec91714b2af lib/WebService/Cmis/Document.pm
 SHA1 4f64a574fd13444c9ccfb6eb2e91e956e117235e lib/WebService/Cmis/Folder.pm
@@ -72,7 +72,7 @@ SHA1 21204fff98f2de23dcf8beb103659526d31853fd lib/WebService/Cmis/Property/Integ
 SHA1 5be26b9b80f667e94d98181ad51e1b46bd265f98 lib/WebService/Cmis/Property/String.pm
 SHA1 d46ffd703d68aadf949863d47db90dfa596e2b18 lib/WebService/Cmis/PropertyDefinition.pm
 SHA1 679a05c140fd632bf845d1d6eef9ac045b6ef2d1 lib/WebService/Cmis/Relationship.pm
-SHA1 c7535cd734ad0ef675cb26a0934ab2a66695ba8c lib/WebService/Cmis/Repository.pm
+SHA1 6c7bbccc05288ef90ca14188b035e8fc6c614002 lib/WebService/Cmis/Repository.pm
 SHA1 cda23db4a3ec536829f4d3e31de96c526c1d3870 lib/WebService/Cmis/ServerException.pm
 SHA1 7087acf319a86f70d0cf4e59fe626d5635c5a034 t/00-load.t
 SHA1 3ec6171779122b0bdc69937c283be11b2a15dd89 t/00-signature.t
@@ -95,11 +95,11 @@ SHA1 a284683173bea40e9e4679c1a044700443f8a333 t/pod.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQEcBAEBAgAGBQJQQI+oAAoJEFbHzikUeAid4FAH/1SxSpc590rpVYJQgpYdD5mn
-Qfd2X0yd13fjwqvg1iWyuhqwBaZv8XaloMUYpYxxlbJ8Pf9nmz3vOCjVWgmNyUnE
-+lR8LCNmSPFJ23pEWu9hxoULjtQJG7LEB5R6Z+j4jqVQHVYJBeveYolEn9aR7vgC
-kJLZsE8ylcXsAolcD5P/hb1xd8KUPWAoA3Q44AhsujKeHbZkoMQgx7QVGCh0IG+I
-oUlpfdRnnis89qDU8u6bdOmGfYzfvs+CwvUlfW1OmFRIxptTAr/5lu7mrl9Pstev
-EwLrWbHAWVr/lollmlwlZA2vhe82K8qLULTCnSyoinVyJqOQ1Pfwd8lcQ8EIhRY=
-=y9DM
+iQEcBAEBAgAGBQJQQLnwAAoJEFbHzikUeAidDI4IAKpajRqnqwE8CDzLpF0cJoR4
+PTD6FORuVEgPnFRa1PwtqHRJLTrnNFIIjtLXNNN+pD8h5qGxEpbFZgAuSevo9Em4
+q8JWdfQUfJKBHbz8++Pk8AV8BRZgKRJuZGBfoDqUk98CGvKc2bV1R5Nri8fJtQGh
+gMk/6Go9e0xbMlQeWr5ZzuNGB/HOJCTyjObsvcEbGuaZhi7p5Vk2HOHYuYSoCaYF
+kAfyCKwF6YE0upNYwDsbPsQuN1ub3gZTl9ADVqmL4b221ch3a0WsxaEf6HBQ8wEt
+E34St14mIaP83DDiizybHRHUDnqEg2GaZONGzwiWQMCMqSLHzLqpdTpzAw7wEF8=
+=wJ38
 -----END PGP SIGNATURE-----

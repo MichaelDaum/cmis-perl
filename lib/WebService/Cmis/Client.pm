@@ -453,6 +453,9 @@ sub put {
   my $uri = _getUri($url, %params);
   writeCmisDebug("called put($uri)");
 
+  # auto clear the cache
+  $this->clearCache;
+
   # do it
   $this->PUT($uri, $payload,  {"Content-Type"=>$contentType});
 

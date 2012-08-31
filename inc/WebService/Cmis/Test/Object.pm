@@ -491,6 +491,20 @@ sub test_Object_updateSummary : Test(4) {
   isnt($summary1, $summary2);
 }
 
+sub test_Object_updateSummary_empty : Test(2) {
+  my $this = shift;
+
+  my $obj = $this->getTestDocument;
+
+  my $summary = $obj->getSummary;
+  note("summary=$summary");
+  ok($summary);
+
+  my $text = '';
+  $obj->updateSummary($text);
+  $summary = $obj->getSummary;
+  is($summary, '');
+}
 
 sub test_Object_applyACL : Test(11) {
   my $this = shift;
