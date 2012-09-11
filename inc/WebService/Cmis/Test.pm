@@ -5,6 +5,12 @@ use Test::More;
 use strict;
 use warnings;
 
+BEGIN {
+  if (!eval { require "cmis.cfg"; 1 }) {
+    plan skip_all => "WARNING: You need to create a cmis.cfg. See the example file in the inc/ directory.";
+  } 
+}
+
 binmode(STDERR, ":utf8");
 binmode(STDOUT, ":utf8");
 

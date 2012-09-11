@@ -14,7 +14,7 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 ba84631208e9952c844a333541e0b5f6c6e9ccc0 Changes
+SHA1 c5d31dbe40c25a979a4d2fc75dbbf73f98df0aa8 Changes
 SHA1 b7725aa322a04f09f20980fd151d78f9babdd965 MANIFEST
 SHA1 c848e901d3c945d92a788e89ef840ea47fba105a MANIFEST.SKIP
 SHA1 a7afe7cf166d8fcc3e294303b17c8fe76f3aa08b META.yml
@@ -32,7 +32,7 @@ SHA1 ea2c6af29c2339be6fb78edf0924e6951eb40280 inc/Module/Install/Metadata.pm
 SHA1 d2e387590fc4bce3abb1a7282467cb57f6133884 inc/Module/Install/ReadmeFromPod.pm
 SHA1 121a3c95ebbbaea7b75df3ce7e922da7e6a0060f inc/Module/Install/Win32.pm
 SHA1 d9f0ea716ff81c7ae3fcaaf15cc03fb9bf4f01b1 inc/Module/Install/WriteAll.pm
-SHA1 011cc2f9f253c5f644755c52f4513589182ee1b7 inc/WebService/Cmis/Test.pm
+SHA1 bd7604c7085235b490c02328b55d71621dd002fb inc/WebService/Cmis/Test.pm
 SHA1 4ba5b44cc0313ec6a6f1326e2eead30966255c06 inc/WebService/Cmis/Test/ACE.pm
 SHA1 ee2d1f47ae8f84a119989ed5ccd87f4b523d26bc inc/WebService/Cmis/Test/ACL.pm
 SHA1 be26e6757570ea724278f3581c35c80e90efa423 inc/WebService/Cmis/Test/AtomFeed.pm
@@ -45,7 +45,7 @@ SHA1 8271611f5c7f9b6e16ef5075353f3b22a72de906 inc/WebService/Cmis/Test/ObjectTyp
 SHA1 748be64b3d0f2bd904dd45c0cc6e8bf79267cfa4 inc/WebService/Cmis/Test/Property.pm
 SHA1 76c1d2cb7a5d583a454bfd123f7daf704d0a665b inc/WebService/Cmis/Test/Repository.pm
 SHA1 ec5c824a0a45ce3972fa91e2d2f42b9756fc6aa2 inc/cmis.cfg.example
-SHA1 1ab844b9acdb7015815d7f982a07ee7c6ed195bc lib/WebService/Cmis.pm
+SHA1 6e6b9fa6b77dec986429be5a96d6d214bf3bacac lib/WebService/Cmis.pm
 SHA1 4efd307e6faa70ef2e2f7bbe47e484d5840ca4ea lib/WebService/Cmis/ACE.pm
 SHA1 fabbeba51b3f02ef652841cee9c65cf97e4154c0 lib/WebService/Cmis/ACL.pm
 SHA1 55646c5b446c2b9271353502f8450a16b9478dd6 lib/WebService/Cmis/AtomEntry.pm
@@ -74,7 +74,7 @@ SHA1 d46ffd703d68aadf949863d47db90dfa596e2b18 lib/WebService/Cmis/PropertyDefini
 SHA1 679a05c140fd632bf845d1d6eef9ac045b6ef2d1 lib/WebService/Cmis/Relationship.pm
 SHA1 6c7bbccc05288ef90ca14188b035e8fc6c614002 lib/WebService/Cmis/Repository.pm
 SHA1 cda23db4a3ec536829f4d3e31de96c526c1d3870 lib/WebService/Cmis/ServerException.pm
-SHA1 7087acf319a86f70d0cf4e59fe626d5635c5a034 t/00-load.t
+SHA1 66e81e5bde0e453eb52e9d6772558abfe7be24fb t/00-load.t
 SHA1 3ec6171779122b0bdc69937c283be11b2a15dd89 t/00-signature.t
 SHA1 984b5f33ffec07df919dcf1206c8b07bc8d011c9 t/01-basics.t
 SHA1 366818de8e16f0b1bce345a7c40319aa97c5a887 t/02-client.t
@@ -95,11 +95,11 @@ SHA1 a284683173bea40e9e4679c1a044700443f8a333 t/pod.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQEcBAEBAgAGBQJQQLnwAAoJEFbHzikUeAidDI4IAKpajRqnqwE8CDzLpF0cJoR4
-PTD6FORuVEgPnFRa1PwtqHRJLTrnNFIIjtLXNNN+pD8h5qGxEpbFZgAuSevo9Em4
-q8JWdfQUfJKBHbz8++Pk8AV8BRZgKRJuZGBfoDqUk98CGvKc2bV1R5Nri8fJtQGh
-gMk/6Go9e0xbMlQeWr5ZzuNGB/HOJCTyjObsvcEbGuaZhi7p5Vk2HOHYuYSoCaYF
-kAfyCKwF6YE0upNYwDsbPsQuN1ub3gZTl9ADVqmL4b221ch3a0WsxaEf6HBQ8wEt
-E34St14mIaP83DDiizybHRHUDnqEg2GaZONGzwiWQMCMqSLHzLqpdTpzAw7wEF8=
-=wJ38
+iQEcBAEBAgAGBQJQTy4nAAoJEFbHzikUeAid16EIAIVDx8l1zEDeXFuCk+Sr7mCq
+O3HZpwPuKyI/c1VscTPmfKPoZtUtvG6e7PZz1mPwxYrFQMwPsRdcYCkWc1GyqS/t
+31mhlJMtHisx98OYcokNDPMhCcz5PsCnHDTR1X3zqsYR9PJZNNFPjvtziFk167DI
+OIjgg/jmNkb/YM7O6pkCyjcvxOKKC43uWhsZSuh+353XYNmTx4gPeHRLjubsaCNE
+CYwPdUAhWSXn5T32mEjgcxitNZ4ysZuTOSr7An+UnWxe+/+B1S8OluVsz3FOU6d/
+RJvBbXUKrMRspO6N8+dIgrMiqe9WfhZHI66uKzvRWXkSLtJptNwBVnfF+ATHg8w=
+=/k5a
 -----END PGP SIGNATURE-----
