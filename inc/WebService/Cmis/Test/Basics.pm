@@ -50,9 +50,10 @@ sub test_repository_ClientExcepion_No_Access : Test(4) {
   try {
 
     my $badClient = WebService::Cmis::getClient(
-      %{$this->{config}},
-      user => "foo",
-      password => "bar",
+      %{$this->{config}}
+    )->login(
+      user=>"foo", 
+      password=>"bar"
     );
 
     $result = $badClient->get;

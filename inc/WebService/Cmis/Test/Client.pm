@@ -6,39 +6,38 @@ use strict;
 use warnings;
 
 use Error qw(:try);
+use WebService::Cmis::ClientException ();
 
 sub test_login : Test(1) {
   my $this = shift;
 
   my $client = $this->getClient;
-  $client->login;
 
-  ok($client->{_ticket} || !defined($client->{loginUrl}));
+  ok($client->{ticket} || !defined($client->{loginUrl}));
 }
 
-sub test_reuse_ticket : Test(3) {
+sub test_reuse_ticket : Test(2) {
   my $this = shift;
-
+    
   my $client1 = $this->getClient;
-  my $ticket1 = $client1->login;
+  my $ticket1 = $client1->{ticket};
 
-  ok($ticket1);
+  SKIP: {
+    skip "no ticket authentication", 2 unless $ticket1;
 
-  my $client2 = $this->getClient(user=>'ROLE_TICKET', password=>$ticket1);
-  my $ticket2 = $client2->login;
+    my $client2 = $this->getClient()->login(ticket=>$ticket1);
+    my $ticket2 = $client2->{ticket};
 
-  ok($ticket2);
+    ok($ticket2);
 
-  is($ticket1, $ticket2);
+    is($ticket1, $ticket2);
+  }
 }
 
-sub test_cant_reuse_after_logout : Tests {
+sub test_cant_reuse_after_logout : Test(1) {
   my $this = shift;
 
   my $client = $this->getClient;
-  my $ticket = $client->login;
-
-  ok($ticket);
 
   $client->logout;
   $this->{client} = undef;
@@ -58,14 +57,13 @@ sub test_logout : Test(2) {
   my $this = shift;
 
   my $client = $this->getClient;
-  $client->login;
 
-  ok($client->{_ticket} || !defined($client->{logoutUrl}));
+  ok($client->{ticket} || !defined($client->{logoutUrl}));
 
   $client->logout;
   $this->{client} = undef;
 
-  ok(!defined $client->{_ticket} || !defined($client->{logoutUrl}));
+  ok(!defined $client->{ticket} || !defined($client->{logoutUrl}));
 }
 
 sub test_Client_getRepositories : Test(3) {

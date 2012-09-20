@@ -14,14 +14,12 @@ to the L<repositories|WebService::Cmis::Repository>.
 
   my $client = WebService::Cmis::getClient(
       url => "http://cmis.alfresco.com/service/cmis",
-      user => "admin",
-      password => "admin",
       cache => new Cache::FileCache({
         cache_root => "/tmp/cmis_client"
       }
     )
-  );
-
+  )
+  
   my $repo = $client->getRepository;
 
 Parent class: L<REST::Client>
@@ -109,7 +107,6 @@ sub new {
   $this->{_cacheHits} = 0;
 
   $this->setUseragent(new BasicAuthAgent($this)); 
-  $this->login;
 
   return $this;
 }
@@ -117,7 +114,7 @@ sub new {
 sub DESTROY {
   my $this = shift;
 
-  undef $this->{useragent};
+  $this->{useragent} = undef;
   $this->_init;
   writeCmisDebug($this->{_cacheHits}." cache hits found") if $this->{cache};
 }
@@ -125,12 +122,14 @@ sub DESTROY {
 sub _init {
   my $this = shift;
 
-  undef $this->{_res};
-  undef $this->{_cacheEntry};
-  undef $this->{_cacheHits};
-  undef $this->{_ticket};
-  undef $this->{repositories};
-  undef $this->{defaultRepository};
+  $this->{_res} = undef;
+  $this->{_cacheEntry} = undef;
+  $this->{_cacheHits} = undef;
+  $this->{ticket} = undef;
+  $this->{repositories} = undef;
+  $this->{defaultRepository} = undef;
+  $this->{user} = undef;
+  $this->{password} = undef;
 }
 
 =item toString
@@ -619,40 +618,72 @@ sub getCacheHits {
   sub get_basic_credentials {
     my $this = shift;
 
+    my $ticket = $this->{client}->{ticket};
+    return ('ROLE_TICKET', $ticket) if defined $ticket;
+
     return ($this->{client}{user}, $this->{client}{password});
   }
 }
 
-=item login() 
+=item login(%params) 
 
-logs in to the web service fetching a ticket if possible.
+logs in to the web service 
+
+Parameters:
+
+=over 4
+
+=item * user 
+
+=item * password
+
+=item * ticket
+
+=back
+
+Login using basic auth. If a C<loginUrl> is configured, a ticket will be aquired to be
+used for later logins by the same user.
+
+  $client->login({
+    user => "user", 
+    password => "pasword"
+  });
+
+  $ticket = $client->{ticket};
+
+  $client->login({
+    user => "user", 
+    ticket => "ticket"
+  });
 
 =cut
 
 sub login {
   my $this = shift;
+  my %params = @_;
 
-  return $this->{_ticket} if defined $this->{_ticket};
-  return if !defined $this->{user};
+  $this->{user} = $params{user} if defined $params{user};
+  $this->{password} = $params{password} if defined $params{password};
+  $this->{ticket} = $params{ticket} if defined $params{ticket};
+
+  return $this unless defined $this->{user};
 
   my $loginUrl = $this->{loginUrl};
-  return unless defined $loginUrl;
+  return $this unless defined $loginUrl;
 
-  $loginUrl =~ s/{username}/$this->{user}/g;
-  $loginUrl =~ s/{password}/$this->{password}/g;
+  unless(defined $this->{ticket}) {
 
-  $this->{_ticket} = ''; # prevent deep recursion 
+    $loginUrl =~ s/{username}/$this->{user}/g;
+    $loginUrl =~ s/{password}/$this->{password}/g;
 
-  my $doc = $this->get($loginUrl);
-  $this->{_ticket} = $doc->findvalue("ticket");
+    my $doc = $this->get($loginUrl);
+    $this->{ticket} = $doc->findvalue("ticket");
 
-  throw Error::Simple("no ticket found in response: ".$doc->toString(1))
-    unless defined $this->{_ticket};
+    throw Error::Simple("no ticket found in response: ".$doc->toString(1))
+      unless defined $this->{ticket};
+  }
 
-  $this->{user} = 'ROLE_TICKET';
-  $this->{password} = $this->{_ticket};
-
-  return $this->{_ticket};
+  return $this;
 }
 
 =item logout() 
@@ -664,14 +695,15 @@ logs out of the web service deleting a ticket previously aquired
 sub logout {
   my $this = shift;
 
-  return if !defined $this->{logoutUrl} || !defined $this->{_ticket};
-
-  my $logoutUrl = $this->{logoutUrl};
-  $logoutUrl =~ s/{ticket}/$this->{_ticket}/g;
-
-  $this->delete($logoutUrl);
+  if (defined $this->{logoutUrl} && defined $this->{ticket}) {
+    my $logoutUrl = $this->{logoutUrl};
+    $logoutUrl =~ s/{ticket}/$this->{ticket}/g;
+    $this->delete($logoutUrl);
+  }
 
   $this->_init;
+
+  return $this;
 }
 
 =back

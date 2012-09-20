@@ -2,6 +2,7 @@ Revision history for WebService-Cmis:
 
 2012-09-20 MichaelDaum <github@michaeldaumconsulting.com>
 
+	 * rationalized logging in
 	 * added ticket-based authentication
 
 2012-09-11 MichaelDaum <github@michaeldaumconsulting.com>

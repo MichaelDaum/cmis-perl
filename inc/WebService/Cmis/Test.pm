@@ -73,7 +73,7 @@ sub getClient {
       %{$this->{config}},
       cache => $cache,
       @_
-    );
+    )->login();
   }
 
   return $this->{client};
