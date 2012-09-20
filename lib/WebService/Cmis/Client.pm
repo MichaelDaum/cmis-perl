@@ -62,13 +62,21 @@ Parameters:
 
 =item * password
 
-=item * url
+=item * url - repository url; example:
 
-=item * cache
+  "http://localhost:8080/alfresco/service/cmis"
 
-=item * useragent
+=item * cache - a Cache::Cache object to be used for caching
 
-=item * follow
+=item * overrideCacheContrib - boolean flag to ignore any http cache control for more aggressive caching
+
+=item * loginUrl - url used for ticket-based authentication; example:
+
+  "http://localhost:8080/alfresco/service/api/login?u={username}&pw={password}"
+
+=item * logoutUrl - url used for ticket-based authentication; example:
+
+  "http://localhost:8080/alfresco/service/api/login/ticket/{ticket}"
 
 =back
 
@@ -79,23 +87,29 @@ See L<REST::Client> for more options.
 sub new {
   my ($class, %params) = @_;
 
-  my $password = delete $params{password};
   my $user = delete $params{user};
+  my $password = delete $params{password};
   my $repositoryUrl = delete $params{url} || '';
   my $cache = delete $params{cache};
   my $overrideCacheControl = delete $params{overrideCacheControl};
+  my $loginUrl = delete $params{loginUrl};
+  my $logoutUrl = delete $params{logoutUrl};
 
-  if (defined $password && defined $user) {
-    $params{useragent} = new BasicAuthAgent($user, $password);  
-    $params{follow} = 1;
-  }
+  $params{follow} = 1 unless defined $params{follow}; # default to follow redirects
 
   my $this = $class->SUPER::new(%params);
 
+  $this->{user} = $user;
+  $this->{password} = $password;
+  $this->{loginUrl} = $loginUrl;
+  $this->{logoutUrl} = $logoutUrl;
   $this->{cache} = $cache;
   $this->{overrideCacheControl} = $overrideCacheControl;
   $this->{repositoryUrl} = $repositoryUrl;
   $this->{_cacheHits} = 0;
+
+  $this->setUseragent(new BasicAuthAgent($this)); 
+  $this->login;
 
   return $this;
 }
@@ -104,10 +118,19 @@ sub DESTROY {
   my $this = shift;
 
   undef $this->{useragent};
+  $this->_init;
+  writeCmisDebug($this->{_cacheHits}." cache hits found") if $this->{cache};
+}
+
+sub _init {
+  my $this = shift;
+
+  undef $this->{_res};
+  undef $this->{_cacheEntry};
+  undef $this->{_cacheHits};
+  undef $this->{_ticket};
   undef $this->{repositories};
   undef $this->{defaultRepository};
-
-  writeCmisDebug($this->{_cacheHits}." cache hits found") if $this->{cache};
 }
 
 =item toString
@@ -222,7 +245,9 @@ sub _cacheKey {
   local $Data::Dumper::Indent = 1;
   local $Data::Dumper::Terse = 1;
   local $Data::Dumper::Sortkeys = 1;
-  return _untaint(Digest::MD5::md5_hex(Data::Dumper::Dumper($_[0])));
+
+  # cache per user as data must not leak between users via the cache
+  return _untaint(Digest::MD5::md5_hex(Data::Dumper::Dumper($_[0]).'::'.$this->{user})); 
 }
 
 =item get($path, %params) 
@@ -239,7 +264,7 @@ sub get {
   my $url;
   if ($path) {
     $path =~ s/^(http:\/\/[^\/]+?):80\//$1\//g; # remove bogus port
-    if ($path =~ /^$this->{repositoryUrl}/) {
+    if ($path =~ /^http/) {
       $url = $path;
     } else {
       $path =~ s/^\///g;
@@ -251,7 +276,7 @@ sub get {
   }
 
   my $uri = _getUri($url, @_);
-  #writeCmisDebug("called get($uri)");
+  writeCmisDebug("called get($uri)");
 
   # do it
   $this->GET($uri);
@@ -290,7 +315,7 @@ sub request {
     $this->{_cacheHits}++;
     return $this;
   }
-  writeCmisDebug("request url=$url");
+  #writeCmisDebug("request url=$url");
 
   my $result = $this->SUPER::request($method, $url, @_);
 
@@ -409,6 +434,10 @@ sub post {
   writeCmisDebug("called post($url)");
   $params{"Content-Type"} = $contentType;
 
+  if ($ENV{CMIS_DEBUG}) {
+    writeCmisDebug("post params:\n   * ".join("\n   * ", map {"$_=$params{$_}"} keys %params));
+  }
+
   # do it
   $this->POST($url, $payload, \%params);
 
@@ -432,7 +461,6 @@ sub put {
   my $path = shift;
   my $payload = shift;
   my $contentType = shift;
-  my %params = @_;
 
   $path =~ s/^\///g;
 
@@ -450,7 +478,7 @@ sub put {
     $url = $this->{repositoryUrl};
   }
 
-  my $uri = _getUri($url, %params);
+  my $uri = _getUri($url, @_);
   writeCmisDebug("called put($uri)");
 
   # auto clear the cache
@@ -500,7 +528,6 @@ sub processErrors {
 
   my $code = $this->responseCode;
   writeCmisDebug("processError($code)");
-
   if ($code >= 400 && $code < 500) {
     throw WebService::Cmis::ClientException($this);
   }
@@ -523,6 +550,8 @@ service.
 
 sub getRepositories {
   my $this = shift;
+
+  writeCmisDebug("called getRepositories");
 
   unless (defined $this->{repositories}) {
     $this->{repositories} = ();
@@ -579,22 +608,71 @@ sub getCacheHits {
 
   sub new {
     my $class = shift;
-    my $user = shift;
-    my $password = shift;
+    my $client = shift;
     
     my $this = $class->SUPER::new(@_);
-    $this->{user} = $user;
-    $this->{password} = $password;
-
+    $this->{client} = $client;
+ 
     return $this;
   }
 
   sub get_basic_credentials {
     my $this = shift;
-    return ($this->{user}, $this->{password});
+
+    return ($this->{client}{user}, $this->{client}{password});
   }
 }
 
+=item login() 
+
+logs in to the web service fetching a ticket if possible.
+
+=cut
+
+sub login {
+  my $this = shift;
+
+  return $this->{_ticket} if defined $this->{_ticket};
+  return if !defined $this->{user};
+
+  my $loginUrl = $this->{loginUrl};
+  return unless defined $loginUrl;
+
+  $loginUrl =~ s/{username}/$this->{user}/g;
+  $loginUrl =~ s/{password}/$this->{password}/g;
+
+  $this->{_ticket} = ''; # prevent deep recursion 
+
+  my $doc = $this->get($loginUrl);
+  $this->{_ticket} = $doc->findvalue("ticket");
+
+  throw Error::Simple("no ticket found in response: ".$doc->toString(1))
+    unless defined $this->{_ticket};
+
+  $this->{user} = 'ROLE_TICKET';
+  $this->{password} = $this->{_ticket};
+
+  return $this->{_ticket};
+}
+
+=item logout() 
+
+logs out of the web service deleting a ticket previously aquired
+
+=cut
+
+sub logout {
+  my $this = shift;
+
+  return if !defined $this->{logoutUrl} || !defined $this->{_ticket};
+
+  my $logoutUrl = $this->{logoutUrl};
+  $logoutUrl =~ s/{ticket}/$this->{_ticket}/g;
+
+  $this->delete($logoutUrl);
+
+  $this->_init;
+}
 
 =back
 

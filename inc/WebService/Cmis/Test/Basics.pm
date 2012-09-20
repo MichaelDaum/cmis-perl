@@ -43,23 +43,24 @@ sub test_repository_ClientException_404 : Test(4) {
   ok(!defined $doc);
 }
 
-sub test_repository_ClientExcepion_401 : Test(4) {
+sub test_repository_ClientExcepion_No_Access : Test(4) {
   my $this = shift;
-
-  my $badClient = WebService::Cmis::getClient(
-    %{$this->{config}},
-    user => "foo",
-    password => "bar",
-  );
 
   my $result;
   try {
+
+    my $badClient = WebService::Cmis::getClient(
+      %{$this->{config}},
+      user => "foo",
+      password => "bar",
+    );
+
     $result = $badClient->get;
   } catch WebService::Cmis::ClientException with {
     my $error = shift;
     ok(ref($error));
     isa_ok($error, "WebService::Cmis::ClientException");
-    like($error, qr/^401 Unauthorized/);
+    like($error, qr/^(401 Unauthorized)|(403 Forbidden)/);
   };
 
   ok(!defined $result);

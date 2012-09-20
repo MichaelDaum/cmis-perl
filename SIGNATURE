@@ -14,7 +14,7 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 c5d31dbe40c25a979a4d2fc75dbbf73f98df0aa8 Changes
+SHA1 7a4424d6a2355299e643acb5dbd83409f3e321e6 Changes
 SHA1 b7725aa322a04f09f20980fd151d78f9babdd965 MANIFEST
 SHA1 c848e901d3c945d92a788e89ef840ea47fba105a MANIFEST.SKIP
 SHA1 1c8da6cf3c2d4a5c7cc5bb827625764cffbcf3bb META.yml
@@ -32,20 +32,20 @@ SHA1 ea2c6af29c2339be6fb78edf0924e6951eb40280 inc/Module/Install/Metadata.pm
 SHA1 d2e387590fc4bce3abb1a7282467cb57f6133884 inc/Module/Install/ReadmeFromPod.pm
 SHA1 121a3c95ebbbaea7b75df3ce7e922da7e6a0060f inc/Module/Install/Win32.pm
 SHA1 d9f0ea716ff81c7ae3fcaaf15cc03fb9bf4f01b1 inc/Module/Install/WriteAll.pm
-SHA1 bd7604c7085235b490c02328b55d71621dd002fb inc/WebService/Cmis/Test.pm
+SHA1 84ecced2bcad5323960c2aa7b8942cb6f97faa83 inc/WebService/Cmis/Test.pm
 SHA1 4ba5b44cc0313ec6a6f1326e2eead30966255c06 inc/WebService/Cmis/Test/ACE.pm
 SHA1 ee2d1f47ae8f84a119989ed5ccd87f4b523d26bc inc/WebService/Cmis/Test/ACL.pm
 SHA1 be26e6757570ea724278f3581c35c80e90efa423 inc/WebService/Cmis/Test/AtomFeed.pm
-SHA1 174b3e05b64319257e762b6f7043bee185abd5b8 inc/WebService/Cmis/Test/Basics.pm
-SHA1 fb1dfc81891566ce01a866f86b8bc11a5673e0d6 inc/WebService/Cmis/Test/Client.pm
+SHA1 78375e95bc8bc0e1b4eaa22855371c1a6dc7e5e0 inc/WebService/Cmis/Test/Basics.pm
+SHA1 a20a1d173d35f338fa012b735d632c0ed9b2ad68 inc/WebService/Cmis/Test/Client.pm
 SHA1 b1557999e27cdccaf23271bf8ed296dae8efd07f inc/WebService/Cmis/Test/Document.pm
 SHA1 17cbd765372d036a6392ba21223cab15e62ad16d inc/WebService/Cmis/Test/Folder.pm
 SHA1 f40e6a371d8a4c8b35b25eac52c8f3e93c204a63 inc/WebService/Cmis/Test/Object.pm
 SHA1 8271611f5c7f9b6e16ef5075353f3b22a72de906 inc/WebService/Cmis/Test/ObjectType.pm
 SHA1 748be64b3d0f2bd904dd45c0cc6e8bf79267cfa4 inc/WebService/Cmis/Test/Property.pm
 SHA1 76c1d2cb7a5d583a454bfd123f7daf704d0a665b inc/WebService/Cmis/Test/Repository.pm
-SHA1 ec5c824a0a45ce3972fa91e2d2f42b9756fc6aa2 inc/cmis.cfg.example
-SHA1 6e6b9fa6b77dec986429be5a96d6d214bf3bacac lib/WebService/Cmis.pm
+SHA1 c23ff77c707a789bb8be2834655595fd33546493 inc/cmis.cfg.example
+SHA1 d5c321ecb7aba724b6612762a479ec51e081b271 lib/WebService/Cmis.pm
 SHA1 4efd307e6faa70ef2e2f7bbe47e484d5840ca4ea lib/WebService/Cmis/ACE.pm
 SHA1 fabbeba51b3f02ef652841cee9c65cf97e4154c0 lib/WebService/Cmis/ACL.pm
 SHA1 55646c5b446c2b9271353502f8450a16b9478dd6 lib/WebService/Cmis/AtomEntry.pm
@@ -54,7 +54,7 @@ SHA1 0e1206c4e645e77f679db7395b4c7e5fdf9d6c65 lib/WebService/Cmis/AtomFeed/Chang
 SHA1 c7f71e6ea12cc31d9766f43171fd065b0c56f008 lib/WebService/Cmis/AtomFeed/ObjectTypes.pm
 SHA1 c7f63942cbc7ad1848c59912d7ba669390216d32 lib/WebService/Cmis/AtomFeed/Objects.pm
 SHA1 f1fa0c37b98d5713882f4736007b550bc8ee426f lib/WebService/Cmis/ChangeEntry.pm
-SHA1 d13786b3c891814a0e4d672a0eb456089e356b9a lib/WebService/Cmis/Client.pm
+SHA1 4396a6e45535903f82c048c2c4f9d3b6912208bd lib/WebService/Cmis/Client.pm
 SHA1 b375c389ab0cc30a05f733eb4f99d709b5f034d2 lib/WebService/Cmis/ClientException.pm
 SHA1 2ef5b91f89b155e500fa66d47cc8dec91714b2af lib/WebService/Cmis/Document.pm
 SHA1 4f64a574fd13444c9ccfb6eb2e91e956e117235e lib/WebService/Cmis/Folder.pm
@@ -95,11 +95,11 @@ SHA1 a284683173bea40e9e4679c1a044700443f8a333 t/pod.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQEcBAEBAgAGBQJQT0DwAAoJEFbHzikUeAiduv4H/1WeQoSYN2SkQq6HhBxtAV5+
-hCETzHVhFDJfhmPo0f1duy957jkMgDfq/QYkSIfiI5ZQ8e50fjnejXinMHBGMCqE
-QzmZ1Pxyix6RCcgOR53YWSaZmRgXpJJ6N0y550lDpMY3CpsL8gyCQ6JBqAUMvqq9
-TEm6RMFNFeIc2zsRsJw9NeeHgExy/qpZCK9o/NlGoZ7TC2YkAsCeCUNfbEkE7k/Y
-NqQdttOy9H2OG/W+9ryO3DgOMZQNufozFQcNoeXUqQoJwd400jqGxzCw7rTDm3yN
-QneB3Pzh/NjgQvLnZ4I0s7VOG2NTKLBNzb7o9xyINIGg9cgOHj+ke01l+9S87QM=
-=C2/t
+iQEcBAEBAgAGBQJQWyVlAAoJEFbHzikUeAidh7sH/2N4xgW0vT5nIXyz56u04vwW
+zMznYUcjJqd7QSjAVfivIHx5hUubfWZpWZQdFH0jFqNoevnq+O4V+ZUmbtMqwnCl
+X22SAuIlqH9FT9WEtXc+hpofYhYP3p3pFPunL2FucKaa7v0U1sjRw8ANQ0W1QBxZ
+vnyvTqsiofOvdSESSeXHGQNSJCzuM/V6Y2PKXewSA22ywAjBUD82wrUWoC3Dq+rW
+Eo3FWdAGa7nTgrAuraLK2pfwohuhErFyZvtEDx7wmXLIsYQtJ/yQ6WLM4OyS9Aue
+ygYLJkMPilnKCUDEhVqFa9v3hYJYQ0x30ELI4fFsKUbXe4owb9xCxImCh6cKFqE=
+=owE0
 -----END PGP SIGNATURE-----

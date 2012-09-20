@@ -7,6 +7,8 @@ $WebService::Cmis{Connections} = {
     user => "<username>",
     password => "<password>",
     testRoot => "/User Homes/<username>",
+    loginUrl => "http://localhost:8080/alfresco/service/api/login?u={username}&pw={password}",
+    logoutUrl => "http://localhost:8080/alfresco/service/api/login/ticket/{ticket}",
   },
   alfresco_com => {
     url => "http://cmis.alfresco.com/service/cmis",

@@ -50,6 +50,9 @@ sub DESTROY {
   foreach my $key (keys %{$this->{testFolders}}) {
     $this->deleteTestFolder($key);
   }
+
+  $this->{client}->logout if $this->{client};
+  $this->{client} = undef;
 }
 
 sub getClient {
@@ -68,7 +71,8 @@ sub getClient {
 
     $this->{client} = WebService::Cmis::getClient(
       %{$this->{config}},
-      cache => $cache
+      cache => $cache,
+      @_
     );
   }
 
