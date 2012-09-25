@@ -108,5 +108,12 @@ sub test_Cmis_collectionTypes : Test(5) {
   is("root",ROOT_COLL,);
 }
 
+sub test_getTestDocument : Test(1) {
+  my $this = shift;
+
+  my $doc = $this->getTestDocument;
+  ok(defined $doc);
+}
+
 
 1;

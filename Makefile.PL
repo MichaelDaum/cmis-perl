@@ -1,11 +1,13 @@
 use inc::Module::Install;
+use strict;
+use warnings;
 
 name     'WebService-Cmis';
+license_from 'lib/WebService/Cmis.pm';
 all_from 'lib/WebService/Cmis.pm';
 readme_from 'lib/WebService/Cmis.pm';
 
 author   q{Michael Daum <daum@michaeldaumconsulting.com>};
-license  'perl';
 
 requires 'Error' => 0;
 requires 'File::MMagic' => 0;

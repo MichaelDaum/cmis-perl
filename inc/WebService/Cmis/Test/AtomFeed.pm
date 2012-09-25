@@ -155,19 +155,25 @@ sub test_AtomFeed_paging : Tests {
   my $error;
   
   try {
-    $changes1 = $repo->getContentChanges;
+    $changes1 = $repo->getContentChanges(maxItems=>10);
   } catch WebService::Cmis::ClientException with {
     $error = shift;
+    note("error=$error");
     ok(ref($error));
     isa_ok($error, "WebService::Cmis::ClientException");
     like($error, qr/^401 Unauthorized/);
+  } catch WebService::Cmis::ServerException with {
+    $error = shift;
+    note("error=$error");
+    ok(ref($error));
+    isa_ok($error, "WebService::Cmis::ServerException");
   };
   return $error if defined $error;
 
   my $size = $changes1->getSize;
 
-  #print STDERR "size1=$size\n";
-  #print STDERR "### changes:\n".$changes1->{xmlDoc}->toString(1)."\n###\n";
+  note("size1=$size");
+  note("### changes:\n".$changes1->{xmlDoc}->toString(1)."\n###");
 
   my %entries1 = ();
   my @keys = ();
@@ -175,7 +181,7 @@ sub test_AtomFeed_paging : Tests {
     my $id = $entry->getId;
     my $changeTime = $entry->getChangeTime;
     my $key = "$id-$changeTime";
-    #print STDERR "key1=$key\n";
+    note("key1=$key");
     push @keys, $key;
 
     ok(defined $entries1{$key});
@@ -186,7 +192,7 @@ sub test_AtomFeed_paging : Tests {
 
   my $changes2 = $repo->getContentChanges(maxItems=>10);
   my $size2 = $changes2->getSize;
-  #print STDERR "size2=$size2\n";
+  note("size2=$size2");
 
   my %entries2 = ();
   while (my $entry = $changes2->getNext) {

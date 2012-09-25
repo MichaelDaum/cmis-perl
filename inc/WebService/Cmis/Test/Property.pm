@@ -4,8 +4,12 @@ use base qw(WebService::Cmis::Test);
 use strict;
 use warnings;
 
+
 use Test::More;
 use Error qw(:try);
+use POSIX qw(strtod setlocale LC_NUMERIC);
+
+setlocale LC_NUMERIC, "en_US.UTF-8";
 
 sub test_PropertyType : Tests {
   my $this = shift;
@@ -96,25 +100,39 @@ sub test_PropertyInteger_parse : Test(4) {
   is(123, WebService::Cmis::Property::parseInteger(123));
   is(123, WebService::Cmis::Property::parseInteger('123 '));
   is(123, WebService::Cmis::Property::parseInteger(123));
-  is(123, WebService::Cmis::Property::parseInteger(123.456));
+  is(123, WebService::Cmis::Property::parseInteger("123.456"));
 }
 
 sub test_PropertyDecimal_parse : Test(2) {
   my $this = shift;
 
   require WebService::Cmis::Property;
-  is(123.456, WebService::Cmis::Property::parseDecimal(123.456, 'propertyDecimal'));
-  is(123.456, WebService::Cmis::Property::parseDecimal('123.456 foobar', 'propertyDecimal'));
+  is(WebService::Cmis::Property::parseDecimal(123.456, 'propertyDecimal'), 123.456);
+  is(WebService::Cmis::Property::parseDecimal('123.456 foobar', 'propertyDecimal'), "123.456");
 }
 
-sub test_Property_parseDateTime : Test(3) {
+sub test_Property_parseDateTime : Test(5) {
   my $this = shift;
 
   require WebService::Cmis::Property;
 
+  is("1234567890+00:00", WebService::Cmis::Property::parseDateTime('2009-02-13T23:31:30+00:00'));
+  is("1234567890Z", WebService::Cmis::Property::parseDateTime('2009-02-13T23:31:30Z'));
   is("1295363154+01:00", WebService::Cmis::Property::parseDateTime('2011-01-18T15:05:54.951+01:00'));
   is("1295363154+01:00", WebService::Cmis::Property::parseDateTime('2011-01-18T15:05:54+01:00'));
   ok(!defined WebService::Cmis::Property::DateTime->parse('foo'));
+}
+
+sub test_Property_DateTime_unparse : Test(2) {
+  my $this = shift;
+
+  require WebService::Cmis::Property::DateTime;
+
+  my $string = WebService::Cmis::Property::DateTime->unparse("1234567890+00:00");
+  is("2009-02-13T23:31:30+00:00", $string);
+
+  $string = WebService::Cmis::Property::DateTime->unparse("1234567890Z");
+  is("2009-02-13T23:31:30Z", $string);
 }
 
 sub test_Property_DateTime_toString : Test {
@@ -159,7 +177,5 @@ sub test_Property_formatDateTime : Test(5) {
   is('none', WebService::Cmis::Property::formatDateTime('foo'));
   is("1970-01-01T00:00:00", WebService::Cmis::Property::formatDateTime(0));
 }
-
-
 
 1;

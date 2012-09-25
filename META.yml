@@ -14,7 +14,7 @@ configure_requires:
 distribution_type: module
 dynamic_config: 0
 generated_by: 'ExtUtils::MakeMaker version 6.57_05'
-license: unknown
+license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: 1.4
@@ -31,4 +31,4 @@ requires:
   URI: 0
   XML::LibXML: 0
   perl: 5.012001
-version: 0.06
+version: 0.07

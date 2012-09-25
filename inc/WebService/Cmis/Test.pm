@@ -195,8 +195,12 @@ sub getTestDocument {
     my $testFile = $this->{config}{testFile};
     return unless -e $testFile;
 
+    my $testFolderPath = $this->getTestFolderPath($key);
+    die "invalid test folder '$testFolderPath'. please check the {testRoot} setting"
+      unless $repo->getObjectByPath($testFolderPath);
+
     # first delete it if it exists
-    my $path = $this->getTestFolderPath($key)."/free.jpg";
+    my $path = "$testFolderPath/free.jpg";
     note("path=$path");
 
     my $document = $repo->getObjectByPath($path);

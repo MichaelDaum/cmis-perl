@@ -1,5 +1,12 @@
 Revision history for WebService-Cmis:
 
+2012-09-25 MichaelDaum <github@michaeldaumconsulting.com>
+
+	 * improvements to test suite
+	   - test for a proper {testRoot} setting in cmis.cfg
+	      - be more robust against a non-configured changeslog
+	      - switch off LC_NUMERIC locales in Property tests
+
 2012-09-20 MichaelDaum <github@michaeldaumconsulting.com>
 
 	 * rationalized logging in
