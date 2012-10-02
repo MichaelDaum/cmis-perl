@@ -1,5 +1,10 @@
 Revision history for WebService-Cmis:
 
+2012-10-02 MichaelDaum <github@michaeldaumconsulting.com>
+
+	 * fixing Bug #79914
+	   also: skip manifest tests on a normal test run
+
 2012-09-25 MichaelDaum <github@michaeldaumconsulting.com>
 
 	 * improvements to test suite

@@ -696,7 +696,6 @@ sub createEntryXmlDoc {
 
   my $entryElement = $xmlDoc->createElementNS(ATOM_NS, "entry");
   $entryElement->addChild($xmlDoc->createAttribute('xmlns:app', APP_NS));
-  $entryElement->addChild($xmlDoc->createAttribute('xmlns:app', APP_NS));
   $entryElement->addChild($xmlDoc->createAttribute('xmlns:cmisra', CMISRA_NS));
         
   $xmlDoc->setDocumentElement($entryElement);
