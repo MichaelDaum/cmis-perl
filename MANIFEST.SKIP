@@ -10,6 +10,10 @@ ignore.txt$
 \.swp$
 \.old$
 \.tar.gz$
+\.tar$
+\.zip$
 \.bak$
 ^WebService\-Cmis\-\d\.\d\d/
 ^tools/git2changelog$
+^inc/WebService/Cmis/Test/Specific.pm
+^t/99.*$

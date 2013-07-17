@@ -413,7 +413,7 @@ sub getCollection {
 
   my $link = $this->getCollectionLink($collectionType);
   my $result = $this->{client}->get($link, @_);
-  #writeCmisDebug("result=".$result->toString);
+  #_writeCmisDebug("result=".$result->toString);
 
   # return the result set
   if ($collectionType eq TYPES_COLL) {
@@ -463,7 +463,7 @@ sub getCollectionLink {
         $this->{collectionLink}{$subNode->string_value} = $href;
       }
     }
-    #writeCmisDebug("collection link for $collectionType: $this->{collectionLink}{$collectionType}");
+    #_writeCmisDebug("collection link for $collectionType: $this->{collectionLink}{$collectionType}");
   }
 
   return $this->{collectionLink}{$collectionType};
@@ -748,11 +748,11 @@ sub createEntryXmlDoc {
     my $propsElement = $objectElement->appendChild($xmlDoc->createElement('cmis:properties'));
     
     foreach my $property (@{$params{properties}}) {
-      #writeCmisDebug("property=".$property->toString);
+      #_writeCmisDebug("property=".$property->toString);
 
       # a name is required for most things, but not for a checkout
       if ($property->getId eq 'cmis:name') {
-        writeCmisDebug("got cmis:name property");
+        _writeCmisDebug("got cmis:name property");
         $entryElement->appendTextChild("title", $property->getValue);
       }
 
@@ -988,7 +988,7 @@ sub _getQueryXmlDoc {
     $queryElement->appendChild($optionElement);
   }
 
-  #writeCmisDebug("query:\n".$xmlDoc->toString(1));
+  #_writeCmisDebug("query:\n".$xmlDoc->toString(1));
 
   return $xmlDoc;
 }

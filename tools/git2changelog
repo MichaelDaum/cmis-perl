@@ -7,11 +7,11 @@ my %changes = ();
 my %dates = ();
 my %emails = ();
 
-my $logs=`git --no-pager log --no-merges --date=short --format="date='%ad' name='%an' email='%ae' subject='%s' body='%b'"`;
+my $logs=`git --no-pager log --no-merges --date=short --format="date='%ad' name='%an' email='%ae' subject='%s' body='%b'EOL"`;
 
-#print "logs=\n$logs\n";
+#print $logs;
 
-while ($logs =~ /date='(.*?)' name='(.*?)' email='(.*?)' subject='(.*?)' body='\s*(.*?)\s*'/gms) {
+while ($logs =~ /date='(.*?)' name='(.*?)' email='(.*?)' subject='(.*?)' body='\s*(.*?)\s*'EOL/gs) {
   my $date = $1;
   my $name = $2;
   my $email = $3;
@@ -19,7 +19,6 @@ while ($logs =~ /date='(.*?)' name='(.*?)' email='(.*?)' subject='(.*?)' body='\
   my $body = $5;
 
   $body =~ s/^/\t   /gm;
-  $body =~ s/\n\s*?\n/\n/gm;
   $body =~ s/^(\s*)\*/$1\-/gm;
 
   $emails{$name} = $email;
@@ -28,6 +27,7 @@ while ($logs =~ /date='(.*?)' name='(.*?)' email='(.*?)' subject='(.*?)' body='\
   my $msg = $subject;
   $msg .= "\n".$body if $body;
   $msg =~ s/\s*$//m;
+
   push @{$changes{$date}{$name}}, $msg;
 }
 

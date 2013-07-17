@@ -1,5 +1,51 @@
 Revision history for WebService-Cmis:
 
+2013-07-17 MichaelDaum <github@michaeldaumconsulting.com>
+
+	 * working towards broader coverage
+	   This one basically adds support for Alfresco's new cmis endpoint based
+	   on Apache Chemistry Open Cmis bindings while still retaining
+	   functionality for the old one. Some people might still like talking to
+	   the now deprecated old cmis endpoint as it might still offer features
+	   not yet covered by Open Cmis.
+	   
+	   Support for Nuxeo is there now.
+	   
+	   With it comes a rework of the authentication services part when
+	   allocating a rest client. We have
+	   
+	   - basic auth (as before),
+	   
+	   - cookie based authentication
+	   
+	   - token based auth
+	   
+	   - header based auth (experimental)
+	   
+	   The test suite now tries to document features broken in some repositories
+	   that can't be tested by us here successfully. As we still want our tests
+	   to cope with it there's a list of brokenFeatures keeping track of vendors and
+	   product versions. Each breakackage comes with a link pointing to the filed
+	   bug report as possible, e.g. ALF-19186, ALF-19186. In some cases I am really
+	   not sure how to deal with bugs which might simply be incompatibilities among
+	   repositories or due to my misunderstanding the CMIS specs.
+	   
+	   We've got a new test dependency: XML::SemanticDiff. It helped to figure out
+	   some problematic cases, but I might take that stuff out on a later point again.
+	   
+	   I've added a way to deal with getSummary() / updateSummary() in a reasonable way.
+	   These two accessed the atom summary of an entry. I'd expect that vendors make use
+	   of as much atom features as possible while mapping their document model onto CMIS.
+	   Unfortunately they don't. For one the old web scripts based Alfresco bindings did
+	   just fine, whereas the new Open CMis based ones put them somewhere else inside
+	   alfresco-specific nodes, a regression.
+	   
+	   Nuxeo goes with Dublin Core which makes more sense in my book.  As
+	   gettign a document's tag line seems quite important I tried to smoothen that out
+	   in the client bindings, which sucks of course. At least I was able to read/write
+	   a document's description again on Nuxeo, while getting back read-only on Alfresco
+	   again (Open CMIS bindings).
+
 2012-10-02 MichaelDaum <github@michaeldaumconsulting.com>
 
 	 * fixing Bug #79914
@@ -62,6 +108,7 @@ Revision history for WebService-Cmis:
 	 * updating signature
 	 * improved tests and pod docu
 	   also:
+	   
 	   - added {cacheEnabled} option to test suite to speed up accessing remote hosts
 	   - properly implemented getRenditions, was called getRenditionInfo before
 

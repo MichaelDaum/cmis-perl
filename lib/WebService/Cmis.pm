@@ -51,7 +51,7 @@ use Exporter qw(import);
 use Carp;
 $Carp::Verbose = 1;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 our @ISA = qw(Exporter);
 
@@ -69,7 +69,7 @@ our @_relations = qw(ACL_REL ALLOWABLEACTIONS_REL ALTERNATE_REL CHANGE_LOG_REL D
 our @_collections = qw(QUERY_COLL TYPES_COLL CHECKED_OUT_COLL UNFILED_COLL
   ROOT_COLL);
 
-our @_utils = qw(writeCmisDebug urlEncode);
+our @_utils = qw(_writeCmisDebug _urlEncode);
 
 our @EXPORT_OK = (@_namespaces, @_contenttypes, @_relations, @_collections, @_utils);
 our %EXPORT_TAGS = (
@@ -149,24 +149,13 @@ sub getClient {
   return new WebService::Cmis::Client(@_);
 }
 
-=item writeCmisDebug($msg)
-
-static utility to write debug output to STDERR. Set the CMIS_DEBUG
-environment variable to switch on some additional debug messages.
-
-=cut
-
-sub writeCmisDebug {
+# static utility to write debug output to STDERR. Set the CMIS_DEBUG environment variable to switch on some additional debug messages.
+sub _writeCmisDebug {
   print STDERR "WebService::Cmis - $_[0]\n" if $ENV{CMIS_DEBUG};
 }
 
-=item urlEncode($text)
-
-encodes a string to be used as a parameter in an url
-
-=cut
-
-sub urlEncode {
+#encodes a string to be used as a parameter in an url
+sub _urlEncode {
   my $text = shift;
 
   $text =~ s/([^0-9a-zA-Z-_.:~!*'\/])/'%'.sprintf('%02x',ord($1))/ge;

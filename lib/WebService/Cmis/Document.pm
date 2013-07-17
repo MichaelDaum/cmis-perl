@@ -237,7 +237,7 @@ sub getContentLink {
       $url .= '?';
       $gotUrlParams = 1;
     }
-    $url .= $key.'='.urlEncode($params{$key});
+    $url .= $key.'='._urlEncode($params{$key});
   }
 
   return $url;

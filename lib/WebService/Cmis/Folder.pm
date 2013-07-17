@@ -93,7 +93,7 @@ sub getChildrenLink {
 
   unless ($url) {
     if ($ENV{CMIS_DEBUG}) {
-      writeCmisDebug("Coulnd not find the children url in\n".$this->{xmlDoc}->toString(1)."\n");
+      _writeCmisDebug("Coulnd not find the children url in\n".$this->{xmlDoc}->toString(1)."\n");
     }
     throw Error::Simple("Could not find the children url"); # SMELL: do a custom exception
   }

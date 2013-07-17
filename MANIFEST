@@ -12,11 +12,12 @@ inc/Module/Install.pm
 inc/Module/Install/ReadmeFromPod.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
+inc/REST/Client.pm
 inc/WebService/Cmis/Test/ACE.pm
 inc/WebService/Cmis/Test/ACL.pm
 inc/WebService/Cmis/Test/AtomFeed.pm
-inc/WebService/Cmis/Test/ChangeFeed.pm
 inc/WebService/Cmis/Test/Basics.pm
+inc/WebService/Cmis/Test/ChangeFeed.pm
 inc/WebService/Cmis/Test/Client.pm
 inc/WebService/Cmis/Test/Document.pm
 inc/WebService/Cmis/Test/Folder.pm
@@ -28,6 +29,11 @@ inc/WebService/Cmis/Test/Repository.pm
 inc/WebService/Cmis/Test/Xml.pm
 lib/WebService/Cmis/ACE.pm
 lib/WebService/Cmis/ACL.pm
+lib/WebService/Cmis/Agent/BasicAuth.pm
+lib/WebService/Cmis/Agent/CookieAuth.pm
+lib/WebService/Cmis/Agent/HeaderAuth.pm
+lib/WebService/Cmis/Agent.pm
+lib/WebService/Cmis/Agent/TokenAuth.pm
 lib/WebService/Cmis/AtomEntry.pm
 lib/WebService/Cmis/AtomFeed/ChangeEntries.pm
 lib/WebService/Cmis/AtomFeed/Objects.pm
@@ -55,10 +61,6 @@ lib/WebService/Cmis/Property/String.pm
 lib/WebService/Cmis/Relationship.pm
 lib/WebService/Cmis/Repository.pm
 lib/WebService/Cmis/ServerException.pm
-lib/WebService/Cmis/Agent.pm
-lib/WebService/Cmis/Agent/BasicAuth.pm
-lib/WebService/Cmis/Agent/TokenAuth.pm
-lib/WebService/Cmis/Agent/CookieAuth.pm
 Makefile.PL
 MANIFEST
 MANIFEST.SKIP

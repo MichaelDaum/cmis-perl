@@ -151,13 +151,13 @@ sub reload {
 
   my $id = $params{id} || $this->{id} || $this->getId();
 
-  $byObjectIdUrl =~ s/{id}/urlEncode($id)/ge;
-  $byObjectIdUrl =~ s/{filter}/urlEncode($params{filter}||'')/ge;
+  $byObjectIdUrl =~ s/{id}/_urlEncode($id)/ge;
+  $byObjectIdUrl =~ s/{filter}/_urlEncode($params{filter}||'')/ge;
   $byObjectIdUrl =~ s/{includeAllowableActions}/WebService::Cmis::Property::Boolean->unparse($params{includeAllowableActions}||'false')/ge;
   $byObjectIdUrl =~ s/{includePolicyIds}/WebService::Cmis::Property::Boolean->unparse($params{includePolicyIds}||'false')/ge;
   $byObjectIdUrl =~ s/{includeRelationships}/WebService::Cmis::Property::Boolean->unparse($params{includeRelationships}||'')/ge;
   $byObjectIdUrl =~ s/{includeACL}/WebService::Cmis::Property::Boolean->unparse($params{includeACL}||'false')/ge;
-  $byObjectIdUrl =~ s/{renditionFilter}/urlEncode($params{renditionFilter}||'')/ge;
+  $byObjectIdUrl =~ s/{renditionFilter}/_urlEncode($params{renditionFilter}||'')/ge;
 
   # SMELL: returnVersion not covered by uri template
   my %extraParams = %{$this->{extra_params}||{}};
@@ -287,7 +287,7 @@ sub getAllowableActions {
     my $node;
 
     if ($this->{xmlDoc}->exists($CMIS_XPATH_ALLOWABLEACTIONS)) {
-      writeCmisDebug("getting allowable actions from doc");
+      _writeCmisDebug("getting allowable actions from doc");
 
       ($node) = $this->{xmlDoc}->findnodes($CMIS_XPATH_ALLOWABLEACTIONS);
 
@@ -337,7 +337,7 @@ sub getACL {
     my $node;
 
     if ($this->{xmlDoc}->exists($CMIS_XPATH_ACL)) {
-      writeCmisDebug("getting acl from doc");
+      _writeCmisDebug("getting acl from doc");
       ($node) = $this->{xmlDoc}->findnodes($CMIS_XPATH_ACL);
     } else {
       my $url = $this->getLink(ACL_REL);

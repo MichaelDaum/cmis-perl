@@ -45,10 +45,6 @@ METHODS
         actually implements the client, defaulting to
         WebService::Cmis::Client::BasicAuthClient.
 
-    writeCmisDebug($msg)
-        static utility to write debug output to STDERR. Set the CMIS_DEBUG
-        environment variable to switch on some additional debug messages.
-
 BUGS
     Please report any bugs or feature requests to "bug-webservice-cmis at
     rt.cpan.org", or through the web interface at
@@ -87,7 +83,7 @@ AUTHOR
     Michael Daum "<daum@michaeldaumconsulting.com>"
 
 COPYRIGHT AND LICENSE
-    Copyright 2012 Michael Daum
+    Copyright 2012-2013 Michael Daum
 
     This module is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself. See

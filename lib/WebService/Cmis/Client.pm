@@ -140,7 +140,7 @@ sub new {
   }
 
   $params{useragent} = $userAgent;
-  writeCmisDebug("userAgent=$userAgent");
+  _writeCmisDebug("userAgent=$userAgent");
 
   my $this = $class->SUPER::new(%params);
 
@@ -161,7 +161,7 @@ sub DESTROY {
 
   my $ua = $this->getUseragent;
   $ua->{client} = undef if defined $ua; # break cyclic links
-  writeCmisDebug($this->{_cacheHits}." cache hits found") if $this->{cache};
+  _writeCmisDebug($this->{_cacheHits}." cache hits found") if $this->{cache};
   $this->_init;
 }
 
@@ -204,11 +204,11 @@ sub toString {
 sub _parseResponse {
   my $this = shift;
 
-  #writeCmisDebug("called _parseResponse");
+  #_writeCmisDebug("called _parseResponse");
 
   #print STDERR "response=".Data::Dumper->Dump([$this->{_res}])."\n";
   my $content = $this->responseContent;
-  #writeCmisDebug("content=$content");
+  #_writeCmisDebug("content=$content");
 
   unless ($this->{xmlParser}) {
     $this->{xmlParser} = XML::LibXML->new;
@@ -230,7 +230,7 @@ sub clearCache {
   my $cache = $this->{cache};
   return unless defined $cache;
 
-  writeCmisDebug("clearing cache");
+  _writeCmisDebug("clearing cache");
   return $cache->clear(@_);
 }
 
@@ -261,7 +261,7 @@ sub removeFromCache {
   my $path = shift;
 
   my $uri = _getUri($path, @_);
-  writeCmisDebug("removing from cache $uri");
+  _writeCmisDebug("removing from cache $uri");
   return $this->_cacheRemove($uri);
 }
 
@@ -336,12 +336,12 @@ sub get {
   }
 
   my $uri = _getUri($url, @_);
-  writeCmisDebug("called get($uri)");
+  _writeCmisDebug("called get($uri)");
 
   # do it
   $this->GET($uri);
 
-  #writeCmisDebug("content=".$this->responseContent);
+  #_writeCmisDebug("content=".$this->responseContent);
 
   my $code = $this->responseCode;
 
@@ -371,11 +371,11 @@ sub request {
   my $url = shift;
 
   if($this->{_cacheEntry} = $this->_cacheGet($url)) {
-    writeCmisDebug("found in cache: $url");
+    _writeCmisDebug("found in cache: $url");
     $this->{_cacheHits}++;
     return $this;
   }
-  #writeCmisDebug("request url=$url");
+  #_writeCmisDebug("request url=$url");
 
   my $result = $this->SUPER::request($method, $url, @_);
 
@@ -387,7 +387,7 @@ sub request {
   my $code = $this->responseCode;
   
   my $cacheControl = $this->{_res}->header("Cache-Control") || '';
-  #writeCmisDebug("cacheControl = $cacheControl");
+  #_writeCmisDebug("cacheControl = $cacheControl");
   $cacheControl = '' if $this->{overrideCacheControl};
   if ($cacheControl ne 'no-cache' && $code >= 200 && $code < 300 && $this->{cache}) {
     my $cacheEntry = {
@@ -491,11 +491,11 @@ sub post {
     $url = $this->{repositoryUrl};
   }
 
-  writeCmisDebug("called post($url)");
+  _writeCmisDebug("called post($url)");
   $params{"Content-Type"} = $contentType;
 
 #  if ($ENV{CMIS_DEBUG}) {
-#    writeCmisDebug("post params:\n   * ".join("\n   * ", map {"$_=$params{$_}"} keys %params));
+#    _writeCmisDebug("post params:\n   * ".join("\n   * ", map {"$_=$params{$_}"} keys %params));
 #  }
 
   # do it
@@ -539,9 +539,9 @@ sub put {
   }
 
   my $uri = _getUri($url, @_);
-  writeCmisDebug("called put($uri)");
-  writeCmisDebug("contentType: ".$contentType);
-  #writeCmisDebug("payload: ".$payload);
+  _writeCmisDebug("called put($uri)");
+  _writeCmisDebug("contentType: ".$contentType);
+  #_writeCmisDebug("payload: ".$payload);
 
   # auto clear the cache
   $this->clearCache;
@@ -566,7 +566,7 @@ sub delete {
   my $url = shift;
 
   my $uri = _getUri($url, @_);
-  writeCmisDebug("called delete($uri)");
+  _writeCmisDebug("called delete($uri)");
 
   $this->DELETE($uri);
 
@@ -591,8 +591,8 @@ sub processErrors {
   my $code = $this->responseCode;
 
   if ($ENV{CMIS_DEBUG}) {
-    writeCmisDebug("processError($code)");
-    writeCmisDebug($this->responseContent);
+    _writeCmisDebug("processError($code)");
+    _writeCmisDebug($this->responseContent);
   }
 
   #print STDERR "header:".$this->{_res}->as_string()."\n";
@@ -622,7 +622,7 @@ service.
 sub getRepositories {
   my $this = shift;
 
-  writeCmisDebug("called getRepositories");
+  _writeCmisDebug("called getRepositories");
 
   unless (defined $this->{repositories}) {
     $this->{repositories} = ();
