@@ -6,9 +6,26 @@ WebService::Cmis::Client - Transport layer
 
 =head1 DESCRIPTION
 
-This is the workhorse communicating with the document manangement server
-by connecting to the REST service. It provides the initial access function
+A CMIS client is used to communicate with the document manangement server
+by connecting to an exposed web service. It provides the initial access function
 to the L<repositories|WebService::Cmis::Repository>.
+
+A client may use one of the user agents to authenticate against the CMIS backend,
+as specified by the =useragent= parameter during object construction. By default
+a user agent will be used performing HTTP basic auth as a fallback implemented
+by most CMIS servers.
+
+Available user agents are:
+
+=over 4
+
+=item * L<WebService::Cmis::Agent::BasicAuth> (default)
+
+=item * L<WebService::Cmis::Agent::TockenAuth> 
+
+=item * L<WebService::Cmis::Agent::CookieAuth>
+
+=back
 
   use Cache::FileCache ();
 
@@ -16,7 +33,11 @@ to the L<repositories|WebService::Cmis::Repository>.
       url => "http://cmis.alfresco.com/service/cmis",
       cache => new Cache::FileCache({
         cache_root => "/tmp/cmis_client"
-      }
+      },
+      useragent => new WebSercice::Cmis::Agent::BasicAuth(
+        user => "...",
+        password => "..."
+      )
     )
   )
   
@@ -39,8 +60,11 @@ use Data::Dumper ();
 use Storable ();
 use Digest::MD5  ();
 use Error qw(:try);
+use URI ();
 
 our @ISA = qw(REST::Client);
+
+our $CMIS_XPATH_REPOSITORIES = new XML::LibXML::XPathExpression('./*[local-name()="service" and namespace-uri()="'.APP_NS.'"]/*[local-name()="workspace" and namespace-uri()="'.APP_NS.'"]');
 
 =head1 METHODS
 
@@ -48,17 +72,18 @@ our @ISA = qw(REST::Client);
 
 =item new(%params)
 
-Create a new WebService::Cmis::Client object. This requires
-a url of the webservice api, as well as a user and password
-for authentication.
+Create a new WebService::Cmis::Client. This requires
+a url of the webservice api, as well as a valid useragent handler.
+
+See L<REST::Client> for more options.
 
 Parameters:
 
 =over 4
 
-=item * user
+=item * useragent - handler to be used for authentication
 
-=item * password
+  "WebService::Cmis::Agent::BasicAuth" (default)
 
 =item * url - repository url; example:
 
@@ -68,45 +93,65 @@ Parameters:
 
 =item * overrideCacheContrib - boolean flag to ignore any http cache control for more aggressive caching
 
-=item * loginUrl - url used for ticket-based authentication; example:
-
-  "http://localhost:8080/alfresco/service/api/login?u={username}&pw={password}"
-
-=item * logoutUrl - url used for ticket-based authentication; example:
-
-  "http://localhost:8080/alfresco/service/api/login/ticket/{ticket}"
-
 =back
 
-See L<REST::Client> for more options.
-
-=cut
+=cut 
 
 sub new {
   my ($class, %params) = @_;
 
-  my $user = delete $params{user};
-  my $password = delete $params{password};
+  my $userAgent = delete $params{useragent};
   my $repositoryUrl = delete $params{url} || '';
   my $cache = delete $params{cache};
   my $overrideCacheControl = delete $params{overrideCacheControl};
-  my $loginUrl = delete $params{loginUrl};
-  my $logoutUrl = delete $params{logoutUrl};
 
-  $params{follow} = 1 unless defined $params{follow}; # default to follow redirects
+  if (!defined $userAgent) {
+    # default
+    
+    require WebService::Cmis::Agent::BasicAuth;
+    $userAgent = new WebService::Cmis::Agent::BasicAuth();
+
+  } elsif (!ref $userAgent) {
+    # a scalar describing the user agent implementation
+
+    my $agentClass = $userAgent;
+    eval "use $agentClass";
+    if ($@) {
+      throw Error::Simple($@);
+    }
+
+    $userAgent = $agentClass->new();
+
+  } elsif (!UNIVERSAL::can($userAgent, 'isa')) {
+    # unblessed reference
+
+    my %params = %$userAgent;
+    my $agentClass = delete $params{impl} || "WebService::Cmis::Agent::BasicAuth";
+    #print STDERR "agentClass=$agentClass\n";
+    eval "use $agentClass";
+    if ($@) {
+      throw Error::Simple($@);
+    }
+
+    $userAgent = $agentClass->new(%params);
+
+  } else {
+    # some class to be used as a user agent as is
+  }
+
+  $params{useragent} = $userAgent;
+  writeCmisDebug("userAgent=$userAgent");
 
   my $this = $class->SUPER::new(%params);
 
-  $this->{user} = $user;
-  $this->{password} = $password;
-  $this->{loginUrl} = $loginUrl;
-  $this->{logoutUrl} = $logoutUrl;
   $this->{cache} = $cache;
   $this->{overrideCacheControl} = $overrideCacheControl;
   $this->{repositoryUrl} = $repositoryUrl;
   $this->{_cacheHits} = 0;
 
-  $this->setUseragent(new BasicAuthAgent($this)); 
+  $this->setFollow(1);
+  $this->setUseragent($userAgent); 
+  $this->getUseragent()->env_proxy();
 
   return $this;
 }
@@ -114,10 +159,12 @@ sub new {
 sub DESTROY {
   my $this = shift;
 
-  $this->{useragent} = undef;
-  $this->_init;
+  my $ua = $this->getUseragent;
+  $ua->{client} = undef if defined $ua; # break cyclic links
   writeCmisDebug($this->{_cacheHits}." cache hits found") if $this->{cache};
+  $this->_init;
 }
+
 
 sub _init {
   my $this = shift;
@@ -125,11 +172,21 @@ sub _init {
   $this->{_res} = undef;
   $this->{_cacheEntry} = undef;
   $this->{_cacheHits} = undef;
-  $this->{ticket} = undef;
   $this->{repositories} = undef;
   $this->{defaultRepository} = undef;
-  $this->{user} = undef;
-  $this->{password} = undef;
+}
+
+=item setUseragent($userAgent)
+
+setter to assert the user agent to be used in the REST::Client
+
+=cut
+
+sub setUseragent {
+  my ($this, $userAgent) = @_;
+
+  $this->SUPER::setUseragent($userAgent);
+  $userAgent->{client} = $this if defined $userAgent;
 }
 
 =item toString
@@ -149,6 +206,7 @@ sub _parseResponse {
 
   #writeCmisDebug("called _parseResponse");
 
+  #print STDERR "response=".Data::Dumper->Dump([$this->{_res}])."\n";
   my $content = $this->responseContent;
   #writeCmisDebug("content=$content");
 
@@ -245,8 +303,11 @@ sub _cacheKey {
   local $Data::Dumper::Terse = 1;
   local $Data::Dumper::Sortkeys = 1;
 
+  my $agent = $this->getUseragent;
+  my $user = $agent->{user} || 'guest';
+
   # cache per user as data must not leak between users via the cache
-  return _untaint(Digest::MD5::md5_hex(Data::Dumper::Dumper($_[0]).'::'.$this->{user})); 
+  return _untaint(Digest::MD5::md5_hex(Data::Dumper::Dumper($_[0]).'::'.$user)); 
 }
 
 =item get($path, %params) 
@@ -433,9 +494,9 @@ sub post {
   writeCmisDebug("called post($url)");
   $params{"Content-Type"} = $contentType;
 
-  if ($ENV{CMIS_DEBUG}) {
-    writeCmisDebug("post params:\n   * ".join("\n   * ", map {"$_=$params{$_}"} keys %params));
-  }
+#  if ($ENV{CMIS_DEBUG}) {
+#    writeCmisDebug("post params:\n   * ".join("\n   * ", map {"$_=$params{$_}"} keys %params));
+#  }
 
   # do it
   $this->POST($url, $payload, \%params);
@@ -479,6 +540,8 @@ sub put {
 
   my $uri = _getUri($url, @_);
   writeCmisDebug("called put($uri)");
+  writeCmisDebug("contentType: ".$contentType);
+  #writeCmisDebug("payload: ".$payload);
 
   # auto clear the cache
   $this->clearCache;
@@ -526,14 +589,23 @@ sub processErrors {
   my $this = shift;
 
   my $code = $this->responseCode;
-  writeCmisDebug("processError($code)");
+
+  if ($ENV{CMIS_DEBUG}) {
+    writeCmisDebug("processError($code)");
+    writeCmisDebug($this->responseContent);
+  }
+
+  #print STDERR "header:".$this->{_res}->as_string()."\n";
+
   if ($code >= 400 && $code < 500) {
-    throw WebService::Cmis::ClientException($this);
+    # SMELL: there's no standardized way of reporting the error properly
+    my $reason = $this->{_res}->header("Title");
+    $reason = $this->responseStatusLine . ' - ' . $reason if defined $reason;
+    throw WebService::Cmis::ClientException($this, $reason);
   }
 
   if ($code >= 500) {
     throw WebService::Cmis::ServerException($this);
-    #throw Error::Simple("Server error $code: ".$this->responseStatusLine);
   }
 
   # default
@@ -557,7 +629,7 @@ sub getRepositories {
 
     my $doc = $this->get;
     if (defined $doc) {
-      foreach my $node ($doc->findnodes('./*[local-name()="service" and namespace-uri()="'.APP_NS.'"]/*[local-name()="workspace" and namespace-uri()="'.APP_NS.'"]')) {
+      foreach my $node ($doc->findnodes($CMIS_XPATH_REPOSITORIES)) {
         my $repo = new WebService::Cmis::Repository($this, $node);
         $this->{repositories}{$repo->getRepositoryId} = $repo;
 
@@ -600,117 +672,49 @@ sub getCacheHits {
   return $this->{_cacheHits};
 }
 
-# private version of a user agent for for basic auth
-{
-  package BasicAuthAgent;
-  our @ISA = qw(LWP::UserAgent);
+=item login(%params) -> $ticket
 
-  sub new {
-    my $class = shift;
-    my $client = shift;
-    
-    my $this = $class->SUPER::new(@_);
-    $this->{client} = $client;
- 
-    return $this;
-  }
+Logs in to the web service. returns an identifier for the internal state
+of the user agent that may be used to login again later on.
 
-  sub get_basic_credentials {
-    my $this = shift;
+  my $ticket = $client->login(
+    user=> $user, 
+    password => $password
+  );
 
-    my $ticket = $this->{client}->{ticket};
-    return ('ROLE_TICKET', $ticket) if defined $ticket;
-
-    return ($this->{client}{user}, $this->{client}{password});
-  }
-}
-
-=item login(%params) 
-
-logs in to the web service 
-
-Parameters:
-
-=over 4
-
-=item * user 
-
-=item * password
-
-=item * ticket
-
-=back
-
-Login using basic auth. If a C<loginUrl> is configured, a ticket will be aquired to be
-used for later logins by the same user.
-
-  $client->login({
-    user => "user", 
-    password => "pasword"
-  });
-
-  $ticket = $client->{ticket};
-
-  $client->login({
-    user => "user", 
-    ticket => "ticket"
-  });
+  $client->login(
+    user => $user,
+    ticket => $ticket
+  );
 
 =cut
 
 sub login {
   my $this = shift;
-  my %params = @_;
-
-  $this->{user} = $params{user} if defined $params{user};
-  $this->{password} = $params{password} if defined $params{password};
-  $this->{ticket} = $params{ticket} if defined $params{ticket};
-
-  return $this unless defined $this->{user};
-
-  my $loginUrl = $this->{loginUrl};
-  return $this unless defined $loginUrl;
-
-  unless(defined $this->{ticket}) {
-
-    $loginUrl =~ s/{username}/$this->{user}/g;
-    $loginUrl =~ s/{password}/$this->{password}/g;
-
-    my $doc = $this->get($loginUrl);
-    $this->{ticket} = $doc->findvalue("ticket");
-
-    throw Error::Simple("no ticket found in response: ".$doc->toString(1))
-      unless defined $this->{ticket};
-  }
-
-  return $this;
+  return $this->getUseragent->login(@_);
 }
 
 =item logout() 
 
-logs out of the web service deleting a ticket previously aquired
+Logs out of the web service invalidating a stored state within the auth handler.
 
 =cut
 
 sub logout {
   my $this = shift;
 
-  if (defined $this->{logoutUrl} && defined $this->{ticket}) {
-    my $logoutUrl = $this->{logoutUrl};
-    $logoutUrl =~ s/{ticket}/$this->{ticket}/g;
-    $this->delete($logoutUrl);
-  }
-
+  my $userAgent = $this->getUseragent;
+  $userAgent->logout(@_) if $userAgent;
+  $this->setUseragent;
   $this->_init;
-
-  return $this;
 }
+
 
 =back
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2012 Michael Daum
+Copyright 2012-2013 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.

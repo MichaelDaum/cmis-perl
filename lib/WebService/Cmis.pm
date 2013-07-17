@@ -14,13 +14,15 @@ WebService::Cmis - Perl interface to CMIS-compliant document management systems
 
     my $client = WebService::Cmis::getClient(
       url => "http://.../alfresco/service/cmis",
+    );
+
+    $client->login(
       user => "...",
       password => "..."
     );
 
     my $repo = $client->getRepository;
     my $root = $client->getRootFolder;
-    ...
 
 =head1 DESCRIPTION
 
@@ -59,7 +61,7 @@ our @_contenttypes = qw(ATOM_XML_TYPE ATOM_XML_ENTRY_TYPE ATOM_XML_ENTRY_TYPE_P
   ATOM_XML_FEED_TYPE ATOM_XML_FEED_TYPE_P CMIS_TREE_TYPE CMIS_TREE_TYPE_P
   CMIS_QUERY_TYPE CMIS_ACL_TYPE);
 
-our @_relations = qw(ACL_REL ALTERNATE_REL CHANGE_LOG_REL DESCRIBEDBY_REL
+our @_relations = qw(ACL_REL ALLOWABLEACTIONS_REL ALTERNATE_REL CHANGE_LOG_REL DESCRIBEDBY_REL
   DOWN_REL EDIT_MEDIA_REL EDIT_REL FIRST_REL FOLDER_TREE_REL LAST_REL NEXT_REL
   POLICIES_REL PREV_REL RELATIONSHIPS_REL ROOT_DESCENDANTS_REL SELF_REL
   SERVICE_REL TYPE_DESCENDANTS_REL UP_REL VERSION_HISTORY_REL VIA_REL);
@@ -67,7 +69,7 @@ our @_relations = qw(ACL_REL ALTERNATE_REL CHANGE_LOG_REL DESCRIBEDBY_REL
 our @_collections = qw(QUERY_COLL TYPES_COLL CHECKED_OUT_COLL UNFILED_COLL
   ROOT_COLL);
 
-our @_utils = qw(writeCmisDebug);
+our @_utils = qw(writeCmisDebug urlEncode);
 
 our @EXPORT_OK = (@_namespaces, @_contenttypes, @_relations, @_collections, @_utils);
 our %EXPORT_TAGS = (
@@ -104,6 +106,7 @@ use constant DESCRIBEDBY_REL => 'describedby';
 use constant DOWN_REL => 'down';
 use constant EDIT_MEDIA_REL => 'edit-media';
 use constant EDIT_REL => 'edit';
+use constant ENCLOSURE_REL => 'enclosure';
 use constant FIRST_REL => 'first';
 use constant LAST_REL => 'last';
 use constant NEXT_REL => 'next';
@@ -115,6 +118,7 @@ use constant VERSION_HISTORY_REL => 'version-history';
 use constant VIA_REL => 'via';
 
 use constant ACL_REL => 'http://docs.oasis-open.org/ns/cmis/link/200908/acl';
+use constant ALLOWABLEACTIONS_REL => 'http://docs.oasis-open.org/ns/cmis/link/200908/allowableactions';
 use constant CHANGE_LOG_REL => 'http://docs.oasis-open.org/ns/cmis/link/200908/changes';
 use constant FOLDER_TREE_REL => 'http://docs.oasis-open.org/ns/cmis/link/200908/foldertree';
 use constant POLICIES_REL => 'http://docs.oasis-open.org/ns/cmis/link/200908/policies';
@@ -129,10 +133,14 @@ use constant CHECKED_OUT_COLL => 'checkedout';
 use constant UNFILED_COLL => 'unfiled';
 use constant ROOT_COLL => 'root';
 
-=item getClient(%args) -> L<WebService::Cmis::Client>
+=item getClient(%params) -> L<WebService::Cmis::Client>
 
-static method to create a cmis client. The client serves as an agent to fulfill
+Static method to create a cmis client. The client serves as an agent to fulfill
 all operations while contacting the document management system. 
+
+While passing on all provided parameters to the real client constructor, the C<impl>
+parameter is used to point to the class that actually implements the client, defaulting
+to L<WebService::Cmis::Client::BasicAuthClient>. 
 
 =cut
 
@@ -152,6 +160,21 @@ sub writeCmisDebug {
   print STDERR "WebService::Cmis - $_[0]\n" if $ENV{CMIS_DEBUG};
 }
 
+=item urlEncode($text)
+
+encodes a string to be used as a parameter in an url
+
+=cut
+
+sub urlEncode {
+  my $text = shift;
+
+  $text =~ s/([^0-9a-zA-Z-_.:~!*'\/])/'%'.sprintf('%02x',ord($1))/ge;
+
+  return $text;
+}
+
+
 =back
 
 =head1 BUGS
@@ -166,7 +189,6 @@ automatically be notified of progress on your bug as I make changes.
 You can find documentation for this module with the perldoc command.
 
     perldoc WebService::Cmis
-
 
 You can also look for information at:
 
@@ -201,7 +223,7 @@ Michael Daum C<< <daum@michaeldaumconsulting.com> >>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2012 Michael Daum
+Copyright 2012-2013 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.

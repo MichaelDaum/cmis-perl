@@ -70,145 +70,118 @@ sub test_Repository_getCapabilities : Test(28) {
   my $caps = $repo->getCapabilities;
 
   # no capabilities at all
-  return "repository does not support capabilities" unless scalar keys %$caps;
+  SKIP: {
+    skip "repository does not support capabilities", 28 unless scalar keys %$caps;
 
-  note("caps:\n".join("\n", map("  ".$_.'='.$caps->{$_}, keys %$caps)));
+    note("caps:\n".join("\n", map("  ".$_.'='.$caps->{$_}, keys %$caps)));
 
-  foreach my $key (qw( Renditions Multifiling ContentStreamUpdatability Unfiling
-    GetFolderTree AllVersionsSearchable Changes Join ACL Query PWCSearchable
-    PWCUpdatable VersionSpecificFiling GetDescendants)) {
-    my $val = $caps->{"$key"};
-    note("$key=$val");
-    ok(defined $val) or diag("capability $key not found");
+    foreach my $key (qw( Renditions Multifiling ContentStreamUpdatability Unfiling
+      GetFolderTree AllVersionsSearchable Changes Join ACL Query PWCSearchable
+      PWCUpdatable VersionSpecificFiling GetDescendants)) {
+      my $val = $caps->{"$key"};
+      note("$key=$val");
+      ok(defined $val) or diag("capability $key not found");
+    }
   }
 }
 
-sub test_Repository_getSupportedPermissions : Test(2) {
+sub test_Repository_getSupportedPermissions : Test(1) {
   my $this = shift;
 
   my $repo = $this->getRepository;
-  my $perms;
-  my $exceptionOk = 0;
-  my $error;
+  my $canACL = $repo->getCapabilities()->{'ACL'};
+  SKIP: {
+    skip "not able to manage ACLs",1 unless $canACL eq 'manage';
 
-  try {
-    $perms = $repo->getSupportedPermissions;
-  } catch WebService::Cmis::NotSupportedException with {
-    $error = shift;
-    is($error, "This repository does not support ACLs");
-    $exceptionOk = 1;
-  };
-  return $error if $exceptionOk;
-
-  note("perms='$perms'");
-
-  like($perms, qr/^(basic|repository|both)$/);
+    my $perms = $repo->getSupportedPermissions;
+    note("perms='$perms'");
+    like($perms, qr/^(basic|repository|both)$/);
+  }
 }
 
 sub test_Repository_getPermissionDefinitions : Tests {
   my $this = shift;
 
   my $repo = $this->getRepository;
+  my $canACL = $repo->getCapabilities()->{'ACL'};
+  SKIP: {
+    skip "not able to manage ACLs" unless $canACL eq 'manage';
 
-  my $permDefs;
-  my $exceptionOk = 0;
-  my $error;
-  
-  try {
-    $permDefs = $repo->getPermissionDefinitions;
-  } catch WebService::Cmis::NotSupportedException with {
-    $error = shift;
-    is($error, "This repository does not support ACLs");
-    $exceptionOk = 1;
-  };
-  return $error if $exceptionOk;
+    my $permDefs = $repo->getPermissionDefinitions;
+    my $numPermDefs = scalar(keys %$permDefs);
+    $this->num_tests($numPermDefs+4);
 
-  my $numPermDefs = scalar(keys %$permDefs);
-  $this->num_tests($numPermDefs+4);
+    ok(defined $permDefs) or diag("no permission definitions found");
 
-  ok(defined $permDefs) or diag("no permission definitions found");
+    my $foundCmisRead;
+    my $foundCmisWrite;
+    foreach my $key (keys %$permDefs) {
+      #print STDERR "$key = $permDefs->{$key}\n";
+      like($key, qr'{http://|cmis:');
 
-  my $foundCmisRead;
-  my $foundCmisWrite;
-  foreach my $key (keys %$permDefs) {
-    note("$key = $permDefs->{$key}");
-    like($key, qr'{http://|cmis:');
-
-    # SMELL: nuxeo calls the basic cmis permissions "basic"... oh well
-    $foundCmisRead = 1 if $key =~ /cmis:(read|basic)/;
-    $foundCmisWrite = 1 if $key =~ /cmis:(write|basic)/;
+      # SMELL: nuxeo calls the basic cmis permissions "basic"... oh well
+      $foundCmisRead = 1 if $key =~ /cmis:(read|basic)/;
+      $foundCmisWrite = 1 if $key =~ /cmis:(write|basic)/;
+    }
+    ok(defined $foundCmisRead) or diag("cmis:read not found in permission definition");
+    ok(defined $foundCmisWrite) or diag("cmis:write not found in permission definition");
   }
-  ok(defined $foundCmisRead) or diag("cmis:read not found in permission definition");
-  ok(defined $foundCmisWrite) or diag("cmis:write not found in permission definition");
 }
 
 sub test_Repository_getPermissionMap : Test(32) {
   my $this = shift;
 
   my $repo = $this->getRepository;
-  my $permMap;
-  my $exceptionOk = 0;
-  my $error;
+  my $canACL = $repo->getCapabilities()->{'ACL'};
+  SKIP: {
+    skip "not able to manage ACLs", 32 unless $canACL eq 'manage';
 
-  try {
-    $permMap = $repo->getPermissionMap;
-  } catch WebService::Cmis::NotSupportedException with {
-    $error = shift;
-    is($error, "This repository does not support ACLs");
-    $exceptionOk = 1;
-  };
-  return $error if $exceptionOk;
+    my $permMap = $repo->getPermissionMap;
+    ok($permMap) or diag("no permission map found");
 
-  ok($permMap) or diag("no permission map found");
+    note("perms=".join(' ', keys %$permMap));
+    my $permMapCount = scalar(keys %$permMap);
+    note("found $permMapCount permission mappings");
+    foreach my $perm (keys %$permMap) {
+      note("$perm=".join(', ', @{$permMap->{$perm}}));
+    }
 
-  note("perms=".join(' ', keys %$permMap));
-  my $permMapCount = scalar(keys %$permMap);
-  note("found $permMapCount permission mappings");
-  foreach my $perm (keys %$permMap) {
-    note("$perm=".join(', ', @{$permMap->{$perm}}));
+    # SMELL: which of these are standard, which are nice to have?
+    my $knownMapCount = 0;
+    foreach my $perm (qw(canSetContent.Document canDeleteTree.Folder
+      canAddPolicy.Object canAddPolicy.Policy canGetChildren.Folder
+      canGetAllVersions.VersionSeries canCancelCheckout.Document canApplyACL.Object
+      canMove.Target canGetDescendents.Folder canRemovePolicy.Policy
+      canCreateFolder.Folder canGetParents.Folder canGetFolderParent.Object
+      canGetAppliedPolicies.Object canUpdateProperties.Object canMove.Object
+      canDeleteContent.Document canCheckout.Document canDelete.Object
+      canRemoveFromFolder.Object canCreateDocument.Folder canGetProperties.Object
+      canAddToFolder.Folder canRemovePolicy.Object canCheckin.Document
+      canAddToFolder.Object canGetACL.Object canViewContent.Object)) {
+     
+      $knownMapCount++;
+      note($knownMapCount.": $perm=".join(", ", @{$permMap->{$perm}})); 
+      ok($permMap->{$perm}) or diag("permission $perm not defined");
+    }
+    note("knownMapCount=$knownMapCount");
+
+    is($permMapCount, $knownMapCount);
   }
-
-  # SMELL: which of these are standard, which are nice to have?
-  my $knownMapCount = 0;
-  foreach my $perm (qw(canSetContent.Document canDeleteTree.Folder
-    canAddPolicy.Object canAddPolicy.Policy canGetChildren.Folder
-    canGetAllVersions.VersionSeries canCancelCheckout.Document canApplyACL.Object
-    canMove.Target canGetDescendents.Folder canRemovePolicy.Policy
-    canCreateFolder.Folder canGetParents.Folder canGetFolderParent.Object
-    canGetAppliedPolicies.Object canUpdateProperties.Object canMove.Object
-    canDeleteContent.Document canCheckout.Document canDelete.Object
-    canRemoveFromFolder.Object canCreateDocument.Folder canGetProperties.Object
-    canAddToFolder.Folder canRemovePolicy.Object canCheckin.Document
-    canAddToFolder.Object canGetACL.Object canViewContent.Object)) {
-   
-    $knownMapCount++;
-    note($knownMapCount.": $perm=".join(", ", @{$permMap->{$perm}})); 
-    ok($permMap->{$perm}) or diag("permission $perm not defined");
-  }
-  note("knownMapCount=$knownMapCount");
-
-  is($permMapCount, $knownMapCount);
 }
 
 sub test_Repository_getPropagation : Test {
   my $this = shift;
 
   my $repo = $this->getRepository;
-  my $prop;
-  my $exceptionOk = 0;
-  my $error;
+  my $canACL = $repo->getCapabilities()->{'ACL'};
+  SKIP: {
+    skip "not able to manage ACLs", 1 unless $canACL eq 'manage';
 
-  try {
-    $prop = $repo->getPropagation;
-  } catch WebService::Cmis::NotSupportedException with {
-    $error = shift;
-    is($error, "This repository does not support ACLs");
-    $exceptionOk = 1;
-  };
-  return $error if $exceptionOk;
+    my $prop = $repo->getPropagation;
 
-  note("prop=$prop");
-  like($prop, qr'objectonly|propagate|repositorydetermined');
+    note("prop=$prop");
+    like($prop, qr'objectonly|propagate|repositorydetermined');
+  }
 }
 
 sub test_Repository_getRootFolderId : Test {
@@ -350,7 +323,7 @@ sub test_Repository_getObjectByPath_Sites : Test(2) {
   my $this = shift;
   my $repo = $this->getRepository;
 
-  my $examplePath = $this->{config}{testRoot};
+  my $examplePath = $this->{testRoot};
   my $obj = $repo->getObjectByPath($examplePath);
 
   note("obj=".$obj->getId.", name=".$obj->getName.", path=".$obj->getPath);
@@ -399,11 +372,16 @@ sub test_Repository_getLink : Test(8) {
   my $repoUrl = $this->{config}{url};
   $repoUrl =~ s/^(http:\/\/[^\/]+?):80\//$1\//g; # remove bogus :80 port
 
-  # SMELL: check capabilities
-  foreach my $rel (FOLDER_TREE_REL, ROOT_DESCENDANTS_REL, TYPE_DESCENDANTS_REL, CHANGE_LOG_REL) {
+  my @rels = (FOLDER_TREE_REL, ROOT_DESCENDANTS_REL, TYPE_DESCENDANTS_REL);
+  push @rels, CHANGE_LOG_REL if $repo->getCapabilities()->{'Changes'} && $repo->getCapabilities()->{'Changes'} ne 'none';
+
+  foreach my $rel (@rels) {
     my $href = $repo->getLink($rel);
-    $href =~ s/^(http:\/\/[^\/]+?):80\//$1\//g; # remove bogus :80 port
+
     ok(defined $href) or diag("link for $rel not found");
+    next unless defined $href;
+
+    $href =~ s/^(http:\/\/[^\/]+?):80\//$1\//g; # remove bogus :80 port
     like($href, qr/^$repoUrl/);
     note("found rel=$rel, href=$href");
   }
@@ -421,41 +399,32 @@ sub test_Repository_getCheckedOutDocs : Tests {
   my $this = shift;
 
   my $repo = $this->getRepository;
-
-  my $obj = $this->getTestDocument;
-  $obj->checkOut;
+  $this->deleteTestDocument;
+  my $doc = $this->getTestDocument;
+  note("before checkout id=".$doc->getId);
+  $doc->checkOut;
+  note("after checkout id=".$doc->getId);
 
   my $checkedOutDocs = $repo->getCheckedOutDocs;
   ok(defined $checkedOutDocs) or diag("can't get checked out docs");
 
-  note("found ".$checkedOutDocs->getSize." checked out document(s)");
-  ok(defined $checkedOutDocs->getSize) or diag("should have at least one document checked out");
+  my $nrEntries = $checkedOutDocs->getSize;
+  ok(defined $nrEntries) or diag("should have at least one document checked out");
+  note("found $nrEntries checked out document(s)");
 
-  while(my $obj = $checkedOutDocs->getNext) {
-    note("name=".$obj->getName.", id=".$obj->getId.", url=".$obj->getSelfLink);
-    isa_ok($obj, 'WebService::Cmis::Document');
+  while(my $doc = $checkedOutDocs->getNext) {
+    my $id = $doc->getId;
+    ok(defined $id);
+    my $baseTypeId = $doc->getProperty("cmis:baseTypeId");
+    ok(defined $baseTypeId);
+    my $selfLink = $doc->getSelfLink;
+    ok(defined $selfLink);
+    note("id=$id, baseTypeId=$baseTypeId, url=$selfLink");
+    isa_ok($doc, 'WebService::Cmis::Document');
   }
 
-  $obj->cancelCheckOut;
-}
-
-sub test_Repository_getUnfiledDocs : Tests {
-  my $this = shift;
-
-  my $repo = $this->getRepository;
-
-  my $unfiledDocs = $repo->getUnfiledDocs;
-  ok(defined $unfiledDocs) or diag("can't get unfiled docs");
-
-  note("found ".$unfiledDocs->getSize." unfiled document(s)");
-
-  while(my $obj = $unfiledDocs->getNext) {
-    note("name=".$obj->getName.", id=".$obj->getId.", url=".$obj->getSelfLink);
-    isa_ok($obj, 'WebService::Cmis::Document');
-  }
-
-  # TODO create an unfiled document and test it
-  #fail("WARNING: create an unfiled document and verify it is in the unfiled collection");
+  note("before cancel checkout id=".$doc->getId);
+  $doc->cancelCheckOut;
 }
 
 sub test_Repository_getTypeDefinitions : Tests {
@@ -486,7 +455,7 @@ sub test_Repository_getTypeChildren : Tests {
   my $repo = $this->getRepository;
 
   # get type defs
-  foreach my $typeId (undef, 'cmis:document', 'cmis:policy', 'cmis:folder', 'cmis:relationship') {
+  foreach my $typeId (undef, 'cmis:document', 'cmis:folder') {
     my $set = $repo->getTypeChildren($typeId);
     ok(defined $set);
     ok($set->getSize > 0);
@@ -504,7 +473,7 @@ sub test_Repository_getTypeDescendants : Tests {
   my $repo = $this->getRepository;
 
   # get type defs
-  foreach my $typeId (undef, 'cmis:document', 'cmis:policy', 'cmis:folder', 'cmis:relationship') {
+  foreach my $typeId (undef, 'cmis:document', 'cmis:folder') { 
     my $set = $repo->getTypeDescendants($typeId, depth=>1);
     ok(defined $set);
     note("found ".$set->getSize." objects(s) of type ".($typeId||'undef'));
@@ -532,26 +501,32 @@ sub test_Repository_getQueryXmlDoc : Test {
 HERE
 
   note("xmlDoc=".$xmlDoc->toString(1));
-  is($testString, $xmlDoc->toString(1));
+  is($xmlDoc->toString(1), $testString) or $this->reportXmlDiff($xmlDoc->toString(1), $testString);
 }
 
-sub test_Repository_query : Test(24) {
+sub test_Repository_query : Test(14) {
   my $this = shift;
+
   my $repo = $this->getRepository;
 
-  my $pageSize = 50;
-  my $skipCount = 10;
+  my $maxItems = 10;
+  my $skipCount = 0;
 
-  foreach my $typeId ('cmis:folder', 'cmis:document', 'cmis:policy') {
-    my $feed = $repo->query("select * from $typeId", maxItems=>$pageSize, skipCount=>$skipCount);
+  require WebService::Cmis::Property;
 
-    require WebService::Cmis::Property;
+  foreach my $typeId ('cmis:folder', 'cmis:document') {
+    my $feed = $repo->query("select * from $typeId", maxItems => $maxItems, skipCount => $skipCount);
+
+    #note("feed=".$feed->{xmlDoc}->toString(1));
+
     my $dateTime = WebService::Cmis::Property::formatDateTime($feed->getUpdated);
 
-    note("title=".$feed->getTitle);
-    note("generator=".$feed->getGenerator);
-    note("updated=".$feed->getUpdated." ($dateTime)");
-    note("numItems=".$feed->getSize);
+    note("title=" . $feed->getTitle);
+    note("generator=" . $feed->getGenerator);
+    note("updated=" . $feed->getUpdated . " ($dateTime)");
+
+    my $numItems = $feed->getSize;
+    note("numItems=$numItems reported in feed while querying for $typeId");
 
     ok(defined $feed);
     ok(defined $feed->getTitle);
@@ -560,21 +535,17 @@ sub test_Repository_query : Test(24) {
     like($feed->getUpdated, qr'^\d+(Z|[-+]\d\d(:\d\d)?)?$');
     like($feed->getSize, qr'^\d+$');
 
-    # check paging
-    is($pageSize, $feed->getPageSize);
-
-    my $size = $feed->getSize;
-    note("size=$size");
-
     # more checks
-    my $index = 0;
-    $index++ while my $obj = $feed->getNext;
-    note("index=$index");
+    my $countItems = 0;
+    $countItems++ while my $obj = $feed->getNext;
+    note("counted $countItems $typeId while crawling the feed");
 
-    my $expect = $size - $skipCount;
-    $expect = 0 if $expect < 0;
+    my $msg = $this->isBrokenFeature("numItems");
+  SKIP: {
+      skip $msg, 1 if $msg;
 
-    is($expect, $index);
+      is($countItems, $numItems) or diag("woops, wrong number of entries in feed");
+    }
   }
 }
 
@@ -608,102 +579,27 @@ sub test_Repository_query_jpg : Tests {
   note("size=$size");
 }
 
-# this only works with an admin account, or I did not find out how
-# to control access to the changes service
-sub test_Repository_getContentChanges : Tests {
-  my $this = shift;
-  my $repo = $this->getRepository;
-
-  my $changeLogToken = $repo->getRepositoryInfo->{'latestChangeLogToken'};
-  unless ($changeLogToken) {
-    return "WARNING: audit not enabled for this repository";
-  }
-  ok(defined $changeLogToken) or return("change log not configured");
-  note("changeLogToken=$changeLogToken");
-
-  #my $changes = $repo->getContentChanges(maxItems=>10);
-  my $changes;
-  my $error;
-
-  try {
-    $changes = $repo->getContentChanges();
-  } catch WebService::Cmis::ClientException with {
-    $error = shift;
-    ok(ref($error));
-    isa_ok($error, "WebService::Cmis::ClientException");
-    like($error, qr/^401 Unauthorized/);
-  };
-  return $error if defined $error;
-
-  note("changes=".$changes->{xmlDoc}->toString(1));
-
-  my $nrChanges = $changes->getSize;
-  ok($nrChanges > 0) or diag("no changes found");
-  note("found ".$changes->getSize." changes");
-
-  require WebService::Cmis::Property;
-  my $index = 0;
-  while(my $changeEntry = $changes->getNext) {
-    last if $index++ > 10;
-
-    isa_ok($changeEntry, "WebService::Cmis::ChangeEntry");
-
-    my $id = $changeEntry->getId;
-    ok(defined $id);
-
-    my $changeType = $changeEntry->getChangeType;
-    ok(defined $id);
-    like($changeType, qr'^(created|updated|deleted|security)$');
-
-    my $changeTime = $changeEntry->getChangeTime;
-    like($changeTime, qr'^\d+$');
-    ok(defind $id);
-
-    $changeTime = WebService::Cmis::Property::formatDateTime($changeTime);
-    ok(defined $id);
-
-    my $objectId = $changeEntry->getObjectId;
-    ok(defined $objectId);
-
-    note("changeEntry id=$id, type=$changeType, time=$changeTime, objectId=$objectId");
-
-    if ($changeType eq 'deleted') {
-      note("- deleted $objectId");
-    } elsif ($changeType =~ /created|updated/) {
-      my $obj = $repo->getObject($objectId);
-      if ($obj) {
-        note("+ changed title=".$obj->getTitle.", type=".$obj->getTypeId);
-      }
-    }
-
-    my $acl = $changeEntry->getACL;
-    next unless $acl;
-    foreach my $ace ($acl->getEntries) {
-      isa_ok($ace, "WebService::Cmis::ACE");
-      note($ace->toString);
-    }
-  }
-  note("index=$index");
-}
-
 sub test_Repository_createEntryXmlDoc_1 : Test {
   my $this = shift;
   my $repo = $this->getRepository;
   my $id = $repo->getRepositoryId;
 
-  my $xmlDoc = $repo->createEntryXmlDoc();
+  my $xmlDoc = $repo->createEntryXmlDoc(summary=>"hello world");
   note($xmlDoc->toString(1));
 
   my $xmlSource = <<"HERE";
 <?xml version="1.0" encoding="UTF-8"?>
-<entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/">
-  <cmisra:object xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/">
-    <cmis:repositoryId xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/">$id</cmis:repositoryId>
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/">
+  <summary>hello world</summary>
+  <cmisra:object>
   </cmisra:object>
 </entry>
 HERE
 
-  is($xmlSource, $xmlDoc->toString(1));
+  my $xmlDocString = $xmlDoc->toString(1);
+  $xmlDocString =~ s/\n\s*?<cmis:repositoryId>.*?<\/cmis:repositoryId>\s*?\n/\n/;
+
+  is($xmlDocString, $xmlSource) or $this->reportXmlDiff($xmlDocString, $xmlSource);
 }
 
 sub test_Repository_createEntryXmlDoc_2 : Test {
@@ -744,9 +640,9 @@ sub test_Repository_createEntryXmlDoc_2 : Test {
 
   my $testString = <<"HERE";
 <?xml version="1.0" encoding="UTF-8"?>
-<entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/">
-  <cmisra:object xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/">
-    <cmis:properties xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/">
+<entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/">
+  <cmisra:object>
+    <cmis:properties>
       <cmis:propertyString propertyDefinitionId="cmis:name">
         <cmis:value>hello world</cmis:value>
       </cmis:propertyString>
@@ -762,7 +658,6 @@ sub test_Repository_createEntryXmlDoc_2 : Test {
         <cmis:value>baz</cmis:value>
       </cmis:propertyString>
     </cmis:properties>
-    <cmis:repositoryId xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/">$id</cmis:repositoryId>
   </cmisra:object>
   <title>hello world</title>
 </entry>
@@ -771,28 +666,16 @@ HERE
   note($xmlDoc->toString(1));
   my $xmlDocString = $xmlDoc->toString(1);
   $xmlDocString =~ s/^\s//;
-  is($testString, $xmlDocString);
-}
+  $xmlDocString =~ s/\n\s*?<cmis:repositoryId>.*?<\/cmis:repositoryId>\s*?\n/\n/;
 
-sub test_Repository_createEmptyXmlDoc : Test {
-  my $this = shift;
-  my $repo = $this->getRepository;
-  my $xmlDoc = $repo->createEmptyXmlDoc;
-
-  my $testString = <<'HERE';
-<?xml version="1.0" encoding="UTF-8"?>
-<entry xmlns="http://www.w3.org/2005/Atom"/>
-HERE
-
-  note($xmlDoc->toString(1));
-  is($testString, $xmlDoc->toString(1));
+  is($xmlDocString, $testString) or $this->reportXmlDiff($xmlDocString, $testString);
 }
 
 sub test_Repository_createEntryXmlDoc_contentFile {
   my $this = shift;
   my $repo = $this->getRepository;
 
-  my $testFile = $this->{config}{testFile};
+  my $testFile = $this->{testFile};
   ok(-e $testFile) or diag("testFile=$testFile not found");
 
   my $xmlDoc = $repo->createEntryXmlDoc(
@@ -816,32 +699,44 @@ sub test_Repository_createDocument_filed : Test {
 
 sub test_Repository_createDocument_unfiled : Test(2) {
   my $this = shift;
+
   my $repo = $this->getRepository;
+  my $canUnfiling = $repo->getCapabilities()->{'Unfiling'};
+SKIP: {
+    skip "repository not supporting unfiling", 2 unless $canUnfiling;
 
-  my $testFile = $this->{config}{testFile};
-  ok(-e $testFile) or diag("testFile=$testFile not found");
+    my $testFile = $this->{testFile};
+    ok(-e $testFile) or diag("testFile=$testFile not found");
 
-  my $error;
-  my $exceptionOk;
-  my $document;
+    my $document = $repo->createDocument("free.jpg", contentFile => $testFile);
 
-  try {
-    $document = $repo->createDocument(
-      "free.jpg",
-      contentFile=>$testFile
-    );
-  } catch WebService::Cmis::NotSupportedException with {
-    $error = shift;
+    ok(defined $document);
+  }
+}
 
-    # if it throws an error canUnfiling must be zero
-    my $canUnfiling = $repo->getCapabilities->{'Unfiling'};
-    is(0, $canUnfiling) or diag("exception even though canUnfiling=$canUnfiling");
-    $exceptionOk = 1;
-  };
+sub test_Repository_getUnfiledDocs : Tests {
+  my $this = shift;
 
-  return $error if $exceptionOk;
+  my $repo = $this->getRepository;
+  my $canUnfiling = $repo->getCapabilities()->{'Unfiling'};
 
-  ok(defined $document);
+SKIP: {
+    skip "repository not supporting unfiling", unless $canUnfiling;
+
+    my $unfiledDocs = $repo->getUnfiledDocs;
+    ok(defined $unfiledDocs) or diag("can't get unfiled docs");
+
+    note("found " . $unfiledDocs->getSize . " unfiled document(s)");
+
+    while (my $obj = $unfiledDocs->getNext) {
+      note("name=" . $obj->getName . ", id=" . $obj->getId . ", url=" . $obj->getSelfLink);
+      isa_ok($obj, 'WebService::Cmis::Document');
+    }
+
+  }
+
+  # TODO create an unfiled document and test it
+  #fail("WARNING: create an unfiled document and verify it is in the unfiled collection");
 }
 
 sub test_Repository_createFolder : Test {

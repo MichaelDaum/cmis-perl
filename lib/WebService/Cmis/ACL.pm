@@ -61,7 +61,7 @@ sub toString {
     push @result, $ace->toString;
   }
 
-  return join("\n", @result);
+  return join("; ", @result);
 }
 
 =item getSize() -> $number
@@ -150,17 +150,21 @@ sub _getEntriesFromXml {
 
   throw Error::Simple("no xmldoc for ACL object") unless defined $this->{xmlDoc};
 
+  my $xcp = XML::LibXML::XPathContext->new($this->{xmlDoc});
+  $xcp->registerNs('cmis', CMIS_NS);
+
   my @result = ();
-  my ($aclNode) = $this->{xmlDoc}->getElementsByTagNameNS(CMIS_NS, 'acl'); # ok
+  my $permNodes = $xcp->find("cmis:acl/cmis:permission");
 
-  foreach my $node ($aclNode->childNodes) {
-    next unless $node->nodeType == XML_ELEMENT_NODE && $node->localname eq 'permission';
+  foreach my $node ($permNodes->get_nodelist) {
+    #print STDERR "node=".$node->toString(2)."\n";
 
-    my $principalId = $node->findvalue('./cmis:principal/cmis:principalId');
-    my $direct = $node->findvalue('./cmis:direct');
-    my @perms = $node->findvalue('./cmis:permission');
+    my $principalId = $xcp->findvalue('./cmis:principal/cmis:principalId', $node);
+    my $direct = $xcp->findvalue('./cmis:direct', $node);
+    my @perms = map {$_->textContent()} $xcp->findnodes('./cmis:permission', $node);
+    next unless @perms;
 
-    #print STDERR "principalId=$principalId, direct=$direct, perms=".join(', ', @perms)."\n";
+    #print STDERR "principalId=$principalId, direct=$direct, perms='".join(', ', @perms)."'\n";
 
     # create an ACE
     push @result, new WebService::Cmis::ACE(
@@ -187,32 +191,28 @@ sub getXmlDoc {
   return unless defined $this->{entries} && $this->getSize;
 
   my $xmlDoc = new XML::LibXML::Document('1.0', 'UTF-8');
-
-  my $aclNode = $xmlDoc->createElementNS(CMIS_NS, 'cmis:acl');
-  $aclNode->setAttribute('xmlns:cmis', CMIS_NS);
+  my $aclNode = $xmlDoc->createElementNS(CMIS_NS, 'acl');
+  $xmlDoc->setDocumentElement($aclNode);
 
   foreach my $ace ($this->getEntries) {
-    my $permNode = $xmlDoc->createElementNS(CMIS_NS, 'cmis:permission');
+    my $permNode = $xmlDoc->createElement('permission');
 
     # principalId
     $permNode->addNewChild(CMIS_NS, 'principal')
-      ->addNewChild(CMIS_NS, 'principalId')
-      ->addChild($xmlDoc->createTextNode($ace->{principalId}));
+      ->appendTextChild('principalId', $ace->{principalId});
 
     # direct
-    $permNode->addNewChild(CMIS_NS, 'direct')
-      ->addChild($xmlDoc->createTextNode($ace->{direct}));
+    $permNode->appendTextChild('direct', $ace->{direct});
 
     # permissions
     foreach my $perm (@{$ace->{permissions}}) {
-      $permNode->addNewChild(CMIS_NS, 'permission')
-        ->addChild($xmlDoc->createTextNode($perm));
+      next unless $perm;
+      $permNode->appendTextChild('permission', $perm);
     }
 
     $aclNode->appendChild($permNode);
   }
   
-  $xmlDoc->setDocumentElement($aclNode);
   return $this->{xmlDoc} = $xmlDoc;
 }
 
@@ -220,7 +220,7 @@ sub getXmlDoc {
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2012 Michael Daum
+Copyright 2012-2013 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.

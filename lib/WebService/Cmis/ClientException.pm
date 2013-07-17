@@ -31,10 +31,10 @@ $client is the L<WebService::Cmis::Client> been used.
 =cut
 
 sub new {
-  my ($class, $client) = @_;
+  my ($class, $client, $reason) = @_;
 
-  my $reason = $client->responseStatusLine;
   my $url = $client->responseBase;
+  $reason = $client->responseStatusLine unless defined $reason;
 
   return $class->SUPER::new(-text=>"$reason at $url");
 }
@@ -47,7 +47,7 @@ Michael Daum C<< <daum@michaeldaumconsulting.com> >>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2012 Michael Daum
+Copyright 2012-2013 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.

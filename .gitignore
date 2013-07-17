@@ -8,3 +8,4 @@ cmis.cfg
 *.old
 WebService-Cmis-*
 *.bak
+.prove

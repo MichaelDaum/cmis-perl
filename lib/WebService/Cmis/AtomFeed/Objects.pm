@@ -33,8 +33,8 @@ returns a CMIS Object created by parsing the given XML fragment
 sub newEntry {
   my ($this, $xmlDoc) = @_;
 
-  #print STDERR "### creating Obect from\n".$xmlDoc->toString(1)."\n###\n";
   return unless defined $xmlDoc;
+  #print STDERR "### creating Object from\n".$xmlDoc->toString(1)."\n###\n";
   return new WebService::Cmis::Object(repository=>$this->{repository}, xmlDoc=>$xmlDoc);
 }
 
@@ -42,7 +42,7 @@ sub newEntry {
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2012 Michael Daum
+Copyright 2012-2013 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.

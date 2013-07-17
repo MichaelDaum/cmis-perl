@@ -26,7 +26,7 @@ Sub-classes must implement <L/newEntry> to specify how to instantiate objects of
 
 use strict;
 use warnings;
-use WebService::Cmis qw(:namespaces :relations);
+use WebService::Cmis qw(:namespaces :relations :utils);
 use XML::LibXML ();
 
 our $CMIS_XPATH_ENTRY = new XML::LibXML::XPathExpression('./*[local-name() = "entry"]');
@@ -63,12 +63,12 @@ sub _initData {
   my $this = shift;
 
   $this->{index} = 0; 
-  undef $this->{entries};
-  undef $this->{title};
-  undef $this->{updated};
-  undef $this->{generator};
-  undef $this->{totalResults};
-  undef $this->{pageSize};
+  $this->{entries} = undef;
+  $this->{title} = undef;
+  $this->{updated} = undef;
+  $this->{generator} = undef;
+  $this->{totalResults} = undef;
+  $this->{pageSize} = undef;
 }
 
 sub DESTROY {
@@ -76,8 +76,8 @@ sub DESTROY {
 
   $this->_initData;
 
-  undef $this->{repository};
-  undef $this->{xmlDoc};
+  $this->{repository} = undef;
+  $this->{xmlDoc} = undef;
 }
 
 =item getLink($relation) -> $href
@@ -104,9 +104,11 @@ sub _getPage {
   my $link = $this->getLink($relation);
   return unless $link;
 
+  #print STDERR "getPage($link)\n";
+
   $this->{xmlDoc} = $this->{repository}{client}->get($link);
 
-  undef $this->{entries};
+  $this->{entries} = undef;
   $this->{index} = 0;
 
   return $this->_getPageEntries;
@@ -149,7 +151,8 @@ sub getNext {
   my $nrEntries = scalar(@{$this->_getPageEntries});
 
   if ($this->{index} >= $nrEntries) {
-    #print STDERR "fetching next page\n";
+    #my $link = $this->getLink(NEXT_REL);
+    #print STDERR "fetching next page from $link\n";
     return unless $this->_getPage(NEXT_REL);
   } else {
     #print STDERR "using current page\n";
@@ -160,6 +163,7 @@ sub getNext {
 
   $this->{index}++;
 
+  #print STDERR "newEntry ($this)\n";
   return $this->newEntry($result);
 }
 
@@ -184,7 +188,7 @@ sub getPrev {
     $this->{index} = $nrEntries-1;
   }
 
-  my $result = $this->{entries}->[$this->{index}];
+  my $result = $this->_getPageEntries->[$this->{index}];
   return unless $result;
 
   return $this->newEntry($result);
@@ -213,6 +217,7 @@ sub getLast {
   my $this = shift;
 
   $this->fastforward;
+  $this->{index}--;
   return $this->newEntry($this->_getPageEntries->[$this->{index}]);
 }
 
@@ -227,8 +232,7 @@ repository returns a "last" link.
 sub fastforward {
   my $this = shift;
 
-  return unless $this->_getPage(LAST_REL);
-
+  $this->_getPage(LAST_REL);
   $this->{index} = scalar(@{$this->_getPageEntries});
 }
 
@@ -343,7 +347,17 @@ return a string representation of this object
 =cut
 
 sub toString {
-  return $_[0]->getTitle();
+  my $this = shift;
+
+  my @result = ();
+  foreach my $elem (@{$this->_getPageEntries}) {
+    my $id = $elem->findvalue('./cmisra:object/cmis:properties/cmis:propertyId[@propertyDefinitionId="cmis:objectId"]');
+    next unless $id;
+    my $name = $elem->findvalue('./cmisra:object/cmis:properties/cmis:propertyString[@propertyDefinitionId="cmis:name"]');
+    push @result, "$id ($name)";
+  }
+
+  return $this->getTitle.': '.join(", ", @result);
 }
 
 
@@ -351,7 +365,7 @@ sub toString {
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2012 Michael Daum
+Copyright 2012-2013 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.

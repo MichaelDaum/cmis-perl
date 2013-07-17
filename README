@@ -7,13 +7,15 @@ SYNOPSIS
 
         my $client = WebService::Cmis::getClient(
           url => "http://.../alfresco/service/cmis",
+        );
+
+        $client->login(
           user => "...",
           password => "..."
         );
 
         my $repo = $client->getRepository;
         my $root = $client->getRootFolder;
-        ...
 
 DESCRIPTION
     This library provides a CMIS client library for Perl that can be used to
@@ -33,10 +35,15 @@ DESCRIPTION
     full understanding of what CMIS is.
 
 METHODS
-    getClient(%args) -> WebService::Cmis::Client
-        static method to create a cmis client. The client serves as an agent
+    getClient(%params) -> WebService::Cmis::Client
+        Static method to create a cmis client. The client serves as an agent
         to fulfill all operations while contacting the document management
         system.
+
+        While passing on all provided parameters to the real client
+        constructor, the "impl" parameter is used to point to the class that
+        actually implements the client, defaulting to
+        WebService::Cmis::Client::BasicAuthClient.
 
     writeCmisDebug($msg)
         static utility to write debug output to STDERR. Set the CMIS_DEBUG

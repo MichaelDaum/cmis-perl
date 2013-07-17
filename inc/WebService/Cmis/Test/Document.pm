@@ -9,11 +9,15 @@ use Test::More;
 use WebService::Cmis qw(:collections :utils :relations :namespaces :contenttypes);
 
 sub _getParents {
-  my $parents = $_[0]->getObjectParents;
+  my $obj = shift;
+
+  note("called _getParents for obj=".$obj->getName.", id=".$obj->getId.", path=".($obj->getPath||''));
+
+  my $parents = $obj->getObjectParents;
 
   my @parents = ();
   if ($parents->isa("WebService::Cmis::AtomFeed")) {
-    #note("nr parents : ".$parents->getSize);
+    note("nr parents: ".$parents->getSize);
     push @parents, $_ while $_ = $parents->getNext;
   } else {
     push @parents, $parents;
@@ -70,38 +74,36 @@ sub test_Document_getAllVersions : Tests {
   }
 }
 
-sub test_Document_checkOut_checkIn : Test(6) {
+sub test_Document_checkOut_checkIn : Tests {
   my $this = shift;
 
   my $repo = $this->getRepository;
-
   my $obj = $this->getTestDocument;
+
   my $isCheckedOut = $obj->isCheckedOut;
   note("isCheckedout=$isCheckedOut");
   is($isCheckedOut, 0) or diag("test document is checked out");
 
+  note("before checking out, id=".$obj->getId." version=".($obj->getProperty("cmis:versionLabel")||''));
+
   $obj->checkOut;
   $isCheckedOut = $obj->isCheckedOut;
   note("isCheckedout=$isCheckedOut");
-  ok(defined $isCheckedOut) or diag("test document is NOT checked out");
+  is($isCheckedOut, 1) or diag("test document is NOT checked out");
+
+  note("after checking out, id=".$obj->getId." version=".($obj->getProperty("cmis:versionLabel")||''));
 
   my $checkedOutBy = $obj->getCheckedOutBy;
   note("checkedOutBy=$checkedOutBy");
   ok(defined $checkedOutBy) or diag("no information checked out by");
-
-  my $pwc = $obj->getPrivateWorkingCopy;
-  ok(defined $pwc) or diag("can't get private working copy");
-  note("pwc=".$pwc->getId);
-
-  note("obj=".$obj->getId.", pwc=".$pwc->getId);
-  isnt($obj->getId, $pwc->getId) or diag("document id should be different from pwc id");
-
+ 
   note("checking in");
-  $pwc->checkIn("this is a test checkin time=".time, major=>1);
-  note("pwc=".$pwc->getId);
+  $obj->checkIn("this is a test checkin time=".time, major=>'true');
 
-  $pwc = $obj->getPrivateWorkingCopy;
-  ok(!defined $pwc) or diag("there shouldn't be a private working copy anymore as the document has been checked in");
+  $obj->getLatestVersion;
+  note("finally id=".$obj->getId." version=".($obj->getProperty("cmis:versionLabel")||''));
+ 
+  $this->deleteTestDocument;
 }
 
 sub test_Document_getContentStream : Test(2) {
@@ -116,41 +118,47 @@ sub test_Document_getContentStream : Test(2) {
   ok(defined $name);
   note("name=$name");
   _saveFile("/tmp/downloaded_$name", $content);
+
 }
 
-sub test_Document_setContentStream : Test(7) {
+sub test_Document_setContentStream : Test(6) {
   my $this = shift;
 
   my $obj = $this->getTestDocument;
   my $id = $obj->getId;
 
+  note("before id=$id");
+
   my $versionLabel = $obj->getProperty("cmis:versionLabel");
   ok(defined $versionLabel);
   note("versionLabel=$versionLabel");
-  
-  my $testFile = $this->{config}{testFile};
-  my $updatedObj = $obj->setContentStream(
-    contentFile => $testFile
+
+  $obj->setContentStream(
+    contentFile => $this->{testFile}
   );
-  ok(defined $updatedObj);
-  ok($updatedObj->{xmlDoc});
-  #print STDERR "xmlDoc=".$updatedObj->{xmlDoc}->toString(1)."\n";
 
-  my $updatedId = $updatedObj->getId;
-  note("before id=$id, after id=$updatedId");
-
-  my $contentStreamMimeType = $updatedObj->getProperty("cmis:contentStreamMimeType");
-  note("contentStreamMimeType=$contentStreamMimeType");
-  is($contentStreamMimeType, "image/jpeg");
+  $id = $obj->getId;
+  note("after id=$id");
+  
+  ok(defined $obj->{xmlDoc});
+  #print STDERR "xmlDoc=".$obj->{xmlDoc}->toString(1)."\n";
 
   my $updatedVersionLabel = $obj->getProperty("cmis:versionLabel");
-  note("updatedVersionLabel=$updatedVersionLabel");
   ok(defined $updatedVersionLabel);
-  ok($versionLabel ne $updatedVersionLabel);
+  note("versionLabel=$versionLabel, updatedVersionLabel=".($updatedVersionLabel||'undef'));
+  isnt($versionLabel, $updatedVersionLabel);
 
-  my $latestObj = $obj->getLatestVersion;
-  my $latestVersionLabel = $latestObj->getProperty("cmis:versionLabel");
+  my $contentStreamMimeType = $obj->getProperty("cmis:contentStreamMimeType");
+  #print STDERR "contentStreamMimeType=$contentStreamMimeType\n";
+  is($contentStreamMimeType, "image/jpeg");
+
+  $obj->getLatestVersion;
+  my $latestVersionLabel = $obj->getProperty("cmis:versionLabel");
+  #print STDERR "xmlDoc=".$obj->{xmlDoc}->toString(1)."\n";
+  note("latestVersionLabel=$latestVersionLabel");
   is($updatedVersionLabel, $latestVersionLabel);
+
+  $this->deleteTestDocument;
 }
 
 sub test_Document_getContentLink : Test {
@@ -160,63 +168,24 @@ sub test_Document_getContentLink : Test {
   my $contentLink = $obj->getContentLink;
   note("content-link=$contentLink");
   ok(defined $contentLink) or diag("can't get content link for test file");
+
 }
 
-sub test_Document_getLatestVersion : Test(7) {
-  my $this = shift;
-  my $repo = $this->getRepository;
-
-  $this->deleteTestDocument;
-  my $doc = $this->getTestDocument;
-  my $versionLabel = $doc->getProperty("cmis:versionLabel");
-  note("versionLabel=$versionLabel");
-  is("1.0", $versionLabel);
-
-  my $beforeCheckedOutDocs = $repo->getCheckedOutDocs->getSize;
-  note("beforeCheckedOutDocs=$beforeCheckedOutDocs");
-
-  $doc->checkOut;
-
-  is($repo->getCheckedOutDocs->getSize, $beforeCheckedOutDocs+1) or diag("checked out queue should be increasing");
-
-  $doc->checkIn("this is a major checkin time=".time);
-  is($repo->getCheckedOutDocs->getSize, $beforeCheckedOutDocs) or diag("checked out queue the same as before");
-
-  $doc = $doc->getLatestVersion;
-  $versionLabel = $doc->getProperty("cmis:versionLabel");
-  note("latest versionLabel=$versionLabel");
-  is("2.0", $versionLabel);
-
-  $doc->checkOut;
-  $doc->checkIn("this is a minor test checkin time=".time, major=>0);
-
-  $doc = $doc->getLatestVersion;
-  $versionLabel = $doc->getProperty("cmis:versionLabel");
-  note("latest versionLabel=$versionLabel");
-  is("2.1", $versionLabel);
-
-  $doc = $doc->getLatestVersion(major=>1);
-  $versionLabel = $doc->getProperty("cmis:versionLabel");
-  note("latest major versionLabel=$versionLabel");
-  is("2.0", $versionLabel);
-
-  is($repo->getCheckedOutDocs->getSize, $beforeCheckedOutDocs) or diag("checked out queue the same as before");
-}
-
-sub test_Document_moveTo : Test(4) {
+sub test_Document_moveTo : Test(5) {
   my $this = shift;
 
   my $repo = $this->getRepository;
-  my $obj = $this->getTestDocument;
+  my $obj = $this->getTestDocument("source");
 
   my ($parent1) = _getParents($obj);
-  my $path = $parent1->getPath."/".$obj->getName;
-  note("old path=".$path);
+  my $sourcePath = $parent1->getPath."/".$obj->getName;
+  note("sourcePath=".$sourcePath);
   note("parents: ".join(", ", map($_->getName, _getParents($obj))));
 
-  my $targetFolder = $this->getTestFolder("2");
-  my $newPath = $targetFolder->getPath."/".$obj->getName;
-  note("new path=$newPath");
+  my $targetFolder = $this->getTestFolder("target");
+  my $targetPath = $targetFolder->getPath."/".$obj->getName;
+  note("targetPath=$targetPath");
+  isnt($targetPath, $sourcePath);
 
   $obj->moveTo($targetFolder);
 
@@ -226,10 +195,10 @@ sub test_Document_moveTo : Test(4) {
   is(1, scalar(_getParents($obj))) or diag("not the same number of parents");
   isnt($parent1->getId, $parent2->getId) or diag("should have changed folder");
 
-  my $result = $repo->getObjectByPath($path);
+  my $result = $repo->getObjectByPath($sourcePath);
   ok(!defined $result) or diag("document should NOT be located in source folder anymore");
 
-  $result = $repo->getObjectByPath($newPath);
+  $result = $repo->getObjectByPath($targetPath);
   ok(defined $result) or diag("document should be located in target folder");
 }
 
@@ -237,37 +206,30 @@ sub test_Document_move : Test(4) {
   my $this = shift;
   my $repo = $this->getRepository;
 
-  my $obj = $this->getTestDocument;
+  my $obj = $this->getTestDocument("source");
   my $name = $obj->getName;
+  note("name=$name");
 
-  my $targetFolder = $this->getTestFolder("2");
+  my $targetFolder = $this->getTestFolder("target");
   my $targetPath = $targetFolder->getPath."/".$name;
-
+  
   my ($sourceFolder) = _getParents($obj);
+  ok(defined $sourceFolder);
+
   my $sourcePath = $sourceFolder->getPath."/".$name;
 
   note("targetPath=$targetPath, sourcePath=$sourcePath");
-
-  $obj->move(undef, $targetFolder);
-
-  #this should be multifiled now, that is have multiple parents; yet it doesn't 
-  note("parents: ".join(", ", map($_->getName, _getParents($obj))));
+  isnt($targetPath, $sourcePath);
+  $obj->moveTo($targetFolder);
 
   #find the document at two paths now
   my $test = $repo->getObjectByPath($targetPath);
   ok(defined $test) or diag("document not found at target location");
 
   $test = $repo->getObjectByPath($sourcePath);
-  ok(defined $test) or diag("document not found at source location");
+  ok(!defined $test) or diag("document still found at source location");
 
-  # delete it once should remove it twice
-  $this->deleteTestDocument;
-
-  $test = $repo->getObjectByPath($targetPath);
-  ok(!defined $test) or diag("document should not be found at target location");
-
-  $test = $repo->getObjectByPath($targetPath);
-  ok(!defined $test) or diag("document should not be found at source location");
+  $this->deleteTestDocument("source");
 }
 
 sub test_Document_unfile : Tests {
@@ -296,60 +258,156 @@ sub test_Document_unfile : Tests {
     note("name=".$obj->getName.", id=".$obj->getId.", url=".$obj->getSelfLink);
     isa_ok($obj, 'WebService::Cmis::Document');
   }
+
 }
 
 sub test_Document_getRenditions : Tests {
   my $this = shift;
 
-  my $obj = $this->getTestDocument;
+  my $repo = $this->getRepository;
+  my $vendorName = $repo->getRepositoryInfo->{vendorName};
+  my $productVersion = $repo->getRepositoryInfo->{productVersion};
 
-  my $renditions = $obj->getRenditions;
-  ok(defined $renditions);
-  note("renditions:");
-  foreach my $rendition (values %$renditions) {
-    ok(defined $rendition);
-    note("rendition properties:".join(", ", sort keys %$rendition));
-    ok(defined $rendition->{streamId});
-    ok(defined $rendition->{mimetype});
-    ok(defined $rendition->{kind});
-    my @info = ();
-    foreach my $key (keys %$rendition) {
-      push @info, "   $key=$rendition->{$key}";
+SKIP: {
+    skip "renditions strange in Alfresco 4.2.0", 1, if $vendorName eq 'Alfresco' && $productVersion =~ /^4\.2\.0/;
+
+    my $obj = $this->getTestDocument;
+
+    #print STDERR "xmlDoc=".$obj->{xmlDoc}->toString(1)."\n";
+
+    my $renditions = $obj->getRenditions;
+    ok(defined $renditions);
+    note("renditions:");
+    foreach my $rendition (values %$renditions) {
+      ok(defined $rendition);
+      note("rendition properties:" . join(", ", sort keys %$rendition));
+      ok(defined $rendition->{streamId});
+      ok(defined $rendition->{mimetype});
+      ok(defined $rendition->{kind});
+      my @info = ();
+      foreach my $key (keys %$rendition) {
+        push @info, "   $key=$rendition->{$key}";
+      }
+      note(join("\n", @info));
     }
-    note(join("\n", @info));
   }
 }
 
-sub test_Document_getRenditionLink : Test(5) {
+sub test_Document_getRenditionLink : Tests {
   my $this = shift;
 
-  my $obj = $this->getTestDocument;
-  my $link = $obj->getRenditionLink(kind=>"thumbnail");
-  #the server might delay thumbnail creation beyond this test
-  #ok(defined $link);
-  #note("thumbnail=$link");
+  SKIP: {
+    skip "unclear when this is implemented by repos";
 
-  $link = $obj->getRenditionLink(mimetype=>"Image");
-  ok(defined $link);
-  note("image=$link");
+    my $obj = $this->getTestDocument;
+    my $link = $obj->getRenditionLink(kind=>"thumbnail");
+    #the server might delay thumbnail creation beyond this test
+    #ok(defined $link);
+    #note("thumbnail=$link");
 
-  $link = $obj->getRenditionLink(mimetype=>"Image", width=>16);
-  ok(defined $link);
-  note("image,16=$link");
+    $link = $obj->getRenditionLink(mimetype=>"Image");
+    ok(defined $link);
+    note("image=$link");
 
-  $link = $obj->getRenditionLink(mimetype=>"Image", width=>32);
-  ok(defined $link);
-  note("image,32=$link");
+    $link = $obj->getRenditionLink(mimetype=>"Image", width=>16);
+    ok(defined $link) || diag("no image/16 rendition");
+    note("image,16=$link");
 
-  $link = $obj->getRenditionLink(kind=>"icon", height=>16);
-  ok(defined $link);
-  note("icon=$link");
+    # not implemetned by some repos
+    #
+    # $link = $obj->getRenditionLink(mimetype=>"Image", width=>32);
+    # ok(defined $link) || diag("no image/32 rendition");
+    # note("image,32=".($link||'undef'));
 
-  $link = $obj->getRenditionLink(kind=>"icon", height=>11234020);
-  ok(!defined $link);
+    # $link = $obj->getRenditionLink(kind=>"icon", height=>16);
+    # ok(defined $link) || diag("no icon/16 rendition");
+    # note("icon=".($link||'undef'));
+
+    $link = $obj->getRenditionLink(kind=>"icon", height=>11234020);
+    ok(!defined $link);
+  }
 }
 
-sub test_Document_checkOut_cancelCheckOut : Test(8) {
+sub test_Document_getLatestVersion : Test(9) {
+  my $this = shift;
+
+  my $repo = $this->getRepository;
+
+  $this->deleteTestDocument;
+  my $doc = $this->getTestDocument;
+
+  my $versionLabel = $doc->getProperty("cmis:versionLabel");
+  note("versionLabel=$versionLabel");
+  is($versionLabel, "1.0");
+
+  note("before checkout id=".$doc->getId);
+
+  my $beforeCheckedOutDocs = $repo->getCheckedOutDocs;
+  note("before checkout size=".$beforeCheckedOutDocs->getSize);
+
+  my $checkedOutDocs = $repo->getCheckedOutDocs;
+  while (my $entry = $checkedOutDocs->getNext) {
+    note("checked doc id=".$entry->getId);
+  }
+
+  $doc->checkOut;
+
+  $checkedOutDocs = $repo->getCheckedOutDocs;
+  note("after checkout id=".$doc->getId);
+  note("after checkout size=".$checkedOutDocs->getSize);
+  while (my $entry = $checkedOutDocs->getNext) {
+    note("checked doc id=".$entry->getId." version=".($entry->getProperty("cmis:versionLabel")||''));
+  }
+
+  is($checkedOutDocs->getSize, $beforeCheckedOutDocs->getSize+1) or diag("checked out queue should be increasing");
+
+  $doc->checkIn("this is a major checkin time=".time);
+
+  note("after checkin id=".$doc->getId);
+
+  $checkedOutDocs = $repo->getCheckedOutDocs;
+  while (my $entry = $checkedOutDocs->getNext) {
+    note("checked doc id=".$entry->getId);
+  }
+
+  is($checkedOutDocs->getSize, $beforeCheckedOutDocs->getSize) or diag("expected the checkedout queue to be the same as before");
+
+  $doc->getLatestVersion();
+
+  my $latestVersionDocId = $doc->getId;
+  note("latestVersionDocId=$latestVersionDocId");
+
+  my $isLatestMajorVersion = $doc->getProperty("cmis:isLatestMajorVersion");
+  note("isLatestMajorVersion=$isLatestMajorVersion");
+  ok($isLatestMajorVersion);
+ 
+  my $isLatestVersion = $doc->getProperty("cmis:isLatestVersion");
+  note("isLatestVersion=$isLatestVersion");
+  ok($isLatestVersion);
+ 
+  $versionLabel = $doc->getProperty("cmis:versionLabel");
+  note("latest versionLabel=$versionLabel");
+  is("2.0", $versionLabel);
+ 
+  $doc->checkOut;
+  $doc->checkIn("this is a minor test checkin time=".time, major=>0);
+ 
+  $doc->getLatestVersion;
+  $versionLabel = $doc->getProperty("cmis:versionLabel");
+  note("latest versionLabel=$versionLabel");
+  is("2.1", $versionLabel);
+
+  $doc->getLatestVersion(major=>1);
+  $versionLabel = $doc->getProperty("cmis:versionLabel");
+  note("latest major versionLabel=$versionLabel");
+  is($versionLabel, "2.0");
+
+  is($repo->getCheckedOutDocs->getSize, $beforeCheckedOutDocs->getSize) or diag("checked out queue the same as before");
+
+  $this->deleteTestDocument;
+}
+
+sub test_Document_checkOut_cancelCheckOut : Test(6) {
   # SMELL: skip some when there is no support for pwc
 
   my $this = shift;
@@ -357,35 +415,29 @@ sub test_Document_checkOut_cancelCheckOut : Test(8) {
   my $repo = $this->getRepository;
   my $obj = $this->getTestDocument;
 
-  my $id1 = $obj->getId;
-  note("id1=$id1");
+  my $id = $obj->getId;
+  note("id=$id");
+ 
+  my $pwc = $obj->checkOut;
+  my $pwcId = $pwc->getId;
+  note("pwcId=$pwcId");
+  ok($repo->getObject($pwcId));
 
-  my $pwc = $obj->getPrivateWorkingCopy;
-  ok(!defined $pwc) or diag("oops, we didn't check it out yet, so there shouldn't be a pwc yet");
-
-  $obj->checkOut;
-  my $id2 = $obj->getId;
-  note("id2=$id2");
-  is($id1, $id2);
-  ok($repo->getObject($id1));
+  my $pwc2 = $obj->getPrivateWorkingCopy;
+  ok(defined $pwc2);
+  my $pwcId2 = $pwc2->getId;
+  note("pwcId2=$pwcId2");
+  ok($repo->getObject($pwcId2));
+  is($pwcId2, $pwcId);
+ 
+  $obj->cancelCheckOut;
+ 
+  $id = $obj->getId;
+  note("id=".$id);
+  ok($repo->getObject($id));
 
   $pwc = $obj->getPrivateWorkingCopy;
-  ok(defined $pwc) or diag("oops, where's my pwc");
-  my $id3 = $obj->getId;
-  note("id3=$id3");
-  is($id1, $id3);
-
-  my $pwcId = $pwc->getId;
-  note("pwcId=".$pwcId);
-  isnt($obj->getId, $pwc->getId) or diag("document id should be different from pwc id");
-
-  $obj->cancelCheckOut;
-  my $id4 = $obj->getId;
-  note("id4=".$id4);
-  ok($repo->getObject($id1));
-  ok(!defined $repo->getObject($pwcId)) or diag("pwc should been gone by now");
+  ok(!defined $pwc);
 }
-
-
 
 1;

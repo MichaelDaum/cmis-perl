@@ -14,13 +14,14 @@ Sub classes:
 
 use strict;
 use warnings;
-use WebService::Cmis qw(:namespaces :relations);
+use WebService::Cmis qw(:namespaces :relations :contenttypes);
 use XML::LibXML qw(:libxml);
 
 our $CMIS_XPATH_TITLE = new XML::LibXML::XPathExpression('./*[local-name() = "title" and namespace-uri() ="'.ATOM_NS.'"]');
 our $CMIS_XPATH_UPDATED = new XML::LibXML::XPathExpression('./*[local-name() = "updated" and namespace-uri() ="'.ATOM_NS.'"]');
 our $CMIS_XPATH_SUMMARY = new XML::LibXML::XPathExpression('./*[local-name() = "summary" and namespace-uri() ="'.ATOM_NS.'"]');
 our $CMIS_XPATH_PUBLISHED = new XML::LibXML::XPathExpression('./*[local-name() = "published" and namespace-uri() ="'.ATOM_NS.'"]');
+our $CMIS_XPATH_EDITED = new XML::LibXML::XPathExpression('./*[local-name() = "edited" and namespace-uri() ="'.APP_NS.'"]');
 our $CMIS_XPATH_AUTHOR = new XML::LibXML::XPathExpression('./*[local-name() = "author" and namespace-uri() ="'.ATOM_NS.'"]');
 our $CMIS_XPATH_ID = new XML::LibXML::XPathExpression('./*[local-name() = "id" and namespace-uri() ="'.ATOM_NS.'"]');
 
@@ -49,12 +50,13 @@ resets the internal cache of this entry.
 sub _initData {
   my $this = shift;
 
-  undef $this->{name};
-  undef $this->{summary};
-  undef $this->{title};
-  undef $this->{published};
-  undef $this->{updated};
-  undef $this->{author};
+  $this->{name} = undef;
+  $this->{summary} = undef;
+  $this->{title} = undef;
+  $this->{published} = undef;
+  $this->{edited} = undef;
+  $this->{updated} = undef;
+  $this->{author} = undef;
 }
 
 =item reload
@@ -114,13 +116,7 @@ returns the unique ID of the change entry.
 =cut
 
 sub getId {
-  my $this = shift;
-
-  unless (defined $this->{id}) {
-    $this->{id} = $this->{xmlDoc}->findvalue($CMIS_XPATH_ID);
-  }
-
-  return $this->{id};
+  return $_[0]->{xmlDoc}->findvalue($CMIS_XPATH_ID);
 }
 
 
@@ -156,6 +152,41 @@ sub getSummary {
   return $this->{summary};
 }
 
+=item updateSummary($text) -> $this
+
+changes the atom:summary of this object 
+
+Warning: some repos don't maintain the atom:summary field. As a consequence,
+updateSummary() might fail with a C<400 Bad Request> error message. Try using
+the dublin core's dc:description via L<WebService::Cmis::Object::updateProperties> for that
+instead.
+
+=cut
+
+sub updateSummary {
+  my ($this, $text) = @_;
+
+  # get the self link
+  my $selfUrl = $this->getSelfLink;
+
+  # build the entry based on the properties provided
+  my $xmlEntryDoc = $this->{repository}->createEntryXmlDoc(summary => $text);
+
+  # do a PUT of the entry
+  my $result = $this->{repository}{client}->put($selfUrl, $xmlEntryDoc->toString, ATOM_XML_TYPE);
+
+  # reset the xmlDoc for this object with what we got back from
+  # the PUT, then call initData we dont' want to call
+  # self.reload because we've already got the parsed XML--
+  # there's no need to fetch it again
+
+  $this->{xmlDoc} = $result;
+  $this->_initData;
+
+  return $this;
+}
+
+
 =item getUpdated -> $epoch
 
 returns the value of the object's atom:updated property.
@@ -175,7 +206,7 @@ sub getUpdated {
 
 =item getPublished -> $epoch
 
-returns the value of the object's atom:published property.
+returns the value of the object's atom:published property,
 
 =cut
 
@@ -189,6 +220,24 @@ sub getPublished {
 
   return $this->{published};
 }
+
+=item getEdited -> $epoch
+
+returns the value of the object's app:edited property,
+
+=cut
+
+sub getEdited {
+  my $this = shift;
+
+  unless ($this->{edited}) {
+    require WebService::Cmis::Property;
+    $this->{edited} = WebService::Cmis::Property::parseDateTime($this->_getDocumentElement->findvalue($CMIS_XPATH_EDITED));
+  }
+
+  return $this->{edited};
+}
+
 
 =item getAuthor -> $author
 
@@ -214,7 +263,7 @@ specified relation.
 =cut
 
 sub getLink {
-  my ($this, $relation, $linkType) = @_;
+  my ($this, $relation, $linkType, $dontReload) = @_;
 
   $relation = '*' unless defined $relation;
 
@@ -235,6 +284,12 @@ sub getLink {
     return $href;
   }
 
+  # try again by reloading the object
+  unless ($dontReload) {
+    $this->reload;
+    return $this->getLink($relation, $linkType, 1);
+  }
+
   return;
 }
 
@@ -247,7 +302,7 @@ Michael Daum C<< <daum@michaeldaumconsulting.com> >>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2012 Michael Daum
+Copyright 2012-2013 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.

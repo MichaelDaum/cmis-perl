@@ -3,8 +3,9 @@
 use strict;
 use warnings;
 
-use WebService::Cmis::Test::Document;
+use WebService::Cmis::Test::Xml;
 
 Test::Class->runtests;
 
 1;
+

@@ -17,7 +17,7 @@ Parent class: L<WebService::Cmis::Object>
 
 use strict;
 use warnings;
-use WebService::Cmis qw(:collections :contenttypes :namespaces :relations);
+use WebService::Cmis qw(:collections :contenttypes :namespaces :relations :utils);
 use WebService::Cmis::Object ();
 use WebService::Cmis::NotImplementedException ();
 use WebService::Cmis::NotSupportedException ();
@@ -25,8 +25,8 @@ use XML::LibXML qw(:libxml);
 use Error qw(:try);
 our @ISA = ('WebService::Cmis::Object');
 
-our $CMIS_XPATH_CONTENT_LINK = new XML::LibXML::XPathExpression('./*[local-name() = "content" and namespace-uri() = "'.ATOM_NS.'"]/@src');
-our $CMIS_XPATH_RENDITIONS = new XML::LibXML::XPathExpression('./*[local-name()="object" and namespace-uri()="'.CMISRA_NS.'"]/*[local-name()="rendition" and namespace-uri()="'.CMIS_NS.'"]');
+our $CMIS_XPATH_CONTENT_LINK = new XML::LibXML::XPathExpression('//*[local-name() = "content" and namespace-uri() = "'.ATOM_NS.'"]/@src');
+our $CMIS_XPATH_RENDITIONS = new XML::LibXML::XPathExpression('//*[local-name()="object" and namespace-uri()="'.CMISRA_NS.'"]/*[local-name()="rendition" and namespace-uri()="'.CMIS_NS.'"]');
 
 =head1 METHODS
 
@@ -42,7 +42,7 @@ sub _initData {
   undef $this->{renditions};
 }
 
-=item checkOut() -> $this
+=item checkOut() -> $pwc
 
 performs a checkOut on this document and returns the
 Private Working Copy (PWC), which is also an instance of
@@ -78,10 +78,9 @@ sub checkOut {
   # post it to to the checkedout collection URL
   my $result = $this->{repository}{client}->post($checkoutUrl, $entryXmlDoc->toString, ATOM_XML_ENTRY_TYPE);
 
-  # now that the doc is checked out, we need to refresh the XML
-  # to pick up the prop updates related to a checkout
   $this->{xmlDoc} = $result;
   $this->_initData;
+  $this->reload;
 
   return $this;
 }
@@ -95,9 +94,6 @@ Returns true if the document is checked out.
 sub isCheckedOut {
   my $this = shift;
 
-  # reloading the document just to make sure we've got the latest
-  # and greatest checked out prop
-  $this->reload;
   my $prop = $this->getProperties->{'cmis:isVersionSeriesCheckedOut'};
   return 0 unless defined $prop;
   return $prop->getValue;
@@ -112,9 +108,6 @@ returns the ID who currently has the document checked out.
 
 sub getCheckedOutBy {
   my $this = shift;
-  # reloading the document just to make sure we've got the latest
-  # and greatest checked out prop
-  $this->reload;
 
   my $prop = $this->getProperties->{'cmis:versionSeriesCheckedOutBy'};
   return unless defined $prop;
@@ -131,10 +124,6 @@ the object.
 
 sub getPrivateWorkingCopy {
   my $this = shift;
-
-  # reloading the document just to make sure we've got the latest
-  # and greatest PWC ID
-  $this->reload;
 
   my $pwcDocId = $this->getProperty('cmis:versionSeriesCheckedOutId');
   return unless $pwcDocId;
@@ -156,9 +145,8 @@ sub cancelCheckOut {
 
   my $pwcDoc = $this->getPrivateWorkingCopy;
   $pwcDoc->delete if defined $pwcDoc;
-  $this->reload;
 
-  return $this;
+  return $this->getLatestVersion;
 }
 
 =item checkIn($checkinComment, %params) -> $this
@@ -201,21 +189,25 @@ sub checkIn {
   my $checkinComment = shift;
 
   # build an empty ATOM entry
-  my $entryXmlDoc = $this->{repository}->createEmptyXmlDoc;
+  my $xmlDoc = new XML::LibXML::Document('1.0', 'UTF-8');
+  my $entryElement = $xmlDoc->createElementNS(ATOM_NS, "entry");
+  $xmlDoc->setDocumentElement($entryElement);
 
   # Get the self link
   # Do a PUT of the empty ATOM to the self link
   my $url = $this->getSelfLink;
 
-  my $result = $this->{repository}{client}->put($url, $entryXmlDoc->toString, ATOM_XML_TYPE, 
+  my $result = $this->{repository}{client}->put($url, $xmlDoc->toString, ATOM_XML_TYPE, 
     "checkin"=>'true', 
     "checkinComment"=>$checkinComment, 
-    @_
+    @_ # here goes our params
   );
 
   # reload the current object with the result
   $this->{xmlDoc} = $result;
   $this->_initData;
+  $this->reload;
+
   return $this;
 }
 
@@ -245,18 +237,10 @@ sub getContentLink {
       $url .= '?';
       $gotUrlParams = 1;
     }
-    $url .= $key.'='._urlEncode($params{$key});
+    $url .= $key.'='.urlEncode($params{$key});
   }
 
   return $url;
-}
-
-sub _urlEncode {
-  my $text = shift;
-
-  $text =~ s/([^0-9a-zA-Z-_.:~!*'\/])/'%'.sprintf('%02x',ord($1))/ge;
-
-  return $text;
 }
 
 =item getContentStream($streamId) -> $data
@@ -321,6 +305,8 @@ See CMIS specification document 2.2.7.5 getAllVersions
 The optional filter and includeAllowableActions are
 supported.
 
+TODO: is it worth caching these inside?
+
 =cut
 
 sub getAllVersions {
@@ -368,10 +354,10 @@ A rendition has the following attributes:
  
 =item * title: Human readable information about the rendition (optional)
  
-=item * height: Typically used for ‘image’ renditions (expressed as pixels).
+=item * height: Typically used for 'image' renditions (expressed as pixels).
 SHOULD be present if kind = C<cmis:thumbnail> (optional)
  
-=item * width: Typically used for ‘image’ renditions (expressed as pixels).
+=item * width: Typically used for 'image' renditions (expressed as pixels).
 SHOULD be present if kind = C<cmis:thumbnail> (optional)
  
 =item * renditionDocumentId: If specified, then the rendition can also be accessed as
@@ -382,6 +368,8 @@ repository-specific. (optional)
 =back
 
 See CMIS specification document 2.1.4.2 Renditions
+
+TODO: use <link rel="alternate" ... />
 
 =cut
 
@@ -399,8 +387,9 @@ sub getRenditions {
       # reload including renditions
       $this->reload(renditionFilter=>'*');
     }
+    my $elem = $this->_getDocumentElement;
     $this->{renditions} = ();
-    foreach my $node ($this->_getDocumentElement->findnodes($CMIS_XPATH_RENDITIONS)) {
+    foreach my $node ($elem->findnodes($CMIS_XPATH_RENDITIONS)) {
       my $rendition = ();
       foreach my $child ($node->childNodes) {
         next unless $child->nodeType == XML_ELEMENT_NODE;
@@ -514,7 +503,10 @@ sub getLatestVersion {
   my $major = delete $params{major};
   $params{returnVersion} = $major?'latestmajor':'latest';
 
-  return $this->{repository}->getObject($this->getId, %params);
+  $this->_initData;
+
+  $params{id} = $this->getProperty("cmis:versionSeriesId");
+  return $this->reload(%params);
 }
 
 =item copy($targetFolder, $propertyList, $versionState) -> $cmisDocument
@@ -593,13 +585,19 @@ if 'false', set the input contentStream if the object currently does not have a 
 
 =back
 
-See CMIS specification document 2.2.4.16 setContentStream
+See CMIS specification document 2.2.4.18 setContentStream
 
 =cut
 
 sub setContentStream { 
   my $this = shift;
   my %params = @_;
+
+  my $contentStreamUpdatability = $this->{repository}->getCapabilities->{'ContentStreamUpdatability'};
+  #print STDERR "contentStreamUpdatability=$contentStreamUpdatability\n";
+
+  throw WebService::Cmis::NotSupportedException("This repository does not allow to set the content stream")
+    if $contentStreamUpdatability eq 'none';
 
   my $contentFile = delete $params{contentFile};
   my $contentData = delete $params{contentData};
@@ -629,19 +627,35 @@ sub setContentStream {
     $contentType = 'application/binary' unless defined $contentType;
   }
 
+
   # SMELL: not sure whether we need to encode or not
   #require MIME::Base64;
   #$contentData = MIME::Base64::encode_base64($contentData);
 
   my $url = $this->getContentLink;
+  throw Error::Simple("Can't find content link for ".$this->getId) unless $url;
+
+  # SMELL: CMIS specification document 2.2.4.18 and 3.1.9 don't agree whether to return the new object Id or not.
+  # In addition it is not clear whether setContentStream should create a new revision or not.
+  # So we make sure the document is checked out and will create a new minor version at least.
+
+  if ($contentStreamUpdatability eq 'pwconly') {
+    $this->checkOut unless $this->isCheckedOut;
+  }
+
   my $result = $this->{repository}{client}->put($url, $contentData, $contentType, %params) || '';
 
   # reload with this result
   if (defined $result && $result ne '') {
     $this->{xmlDoc} = $result;
     $this->_initData;
-  } else {
-    $this->reload;
+  }
+
+  $this->reload;
+
+  # make sure this is checked in
+  if ($contentStreamUpdatability eq 'pwconly') {
+    $this->checkIn("setting content stream", major=>0) if $this->isCheckedOut;
   }
 
   return $this;
@@ -661,7 +675,7 @@ sub deleteContentStream { throw WebService::Cmis::NotImplementedException; }
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2012 Michael Daum
+Copyright 2012-2013 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.

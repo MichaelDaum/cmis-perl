@@ -17,10 +17,11 @@ Parent class: L<WebService::Cmis::Ojbect>
 
 use strict;
 use warnings;
-use WebService::Cmis qw(:relations :contenttypes);
+use WebService::Cmis qw(:relations :contenttypes :utils);
 use WebService::Cmis::Object();
 use WebService::Cmis::NotImplementedException ();
 use WebService::Cmis::NotSupportedException ();
+use WebService::Cmis::AtomFeed::Objects ();
 use Error qw(:try);
 our @ISA = ('WebService::Cmis::Object');
 
@@ -88,9 +89,14 @@ gets the Atom link that knows how to return this object's children.
 sub getChildrenLink {
   my $this = shift;
 
-  my $url = $this->getLink(DOWN_REL, ATOM_XML_FEED_TYPE_P);
+  my $url = $this->getLink(DOWN_REL, ATOM_XML_FEED_TYPE_P, 1);
 
-  throw Error::Simple("Could not find the children url") unless $url; # SMELL: do a custom exception
+  unless ($url) {
+    if ($ENV{CMIS_DEBUG}) {
+      writeCmisDebug("Coulnd not find the children url in\n".$this->{xmlDoc}->toString(1)."\n");
+    }
+    throw Error::Simple("Could not find the children url"); # SMELL: do a custom exception
+  }
 
   return $url;
 }
@@ -104,13 +110,9 @@ returns the 'down' link of type CMIS_TREE_TYPE
 sub getDescendantsLink {
   my $this = shift;
 
-  my $url = $this->getLink(DOWN_REL, CMIS_TREE_TYPE_P);
+  my $url = $this->getLink(DOWN_REL, CMIS_TREE_TYPE_P, 1);
 
   throw Error::Simple("Could not find the descendants url") unless $url; # SMELL: do a custom exception
-
-  # some servers return a depth arg as part of this URL
-  # so strip it off
-  $url =~ s/\?.*?$//g;
 
   return $url;
 }
@@ -166,7 +168,6 @@ sub getDescendants {
   my $result = $this->{repository}{client}->get($descendantsUrl, %params);
 
   # return the result set
-  require WebService::Cmis::AtomFeed::Objects;
   return new WebService::Cmis::AtomFeed::Objects(repository=>$this->{repository}, xmlDoc=>$result);
 }
 
@@ -180,15 +181,32 @@ sub getFolderParent {
   my $this = shift;
 
   # get the appropriate 'up' link
-  my $parentUrl = $this->getLink(UP_REL);
+  my $parentUrl = $this->getLink(UP_REL, undef, 1);
 
   return unless $parentUrl;
 
   # invoke the URL
   my $result = $this->{repository}{client}->get($parentUrl, @_);
 
-  # return the result set
-  return new WebService::Cmis::Folder(repository=>$this->{repository}, xmlDoc=>$result);
+  my $nodeName = $result->documentElement->nodeName;
+  $nodeName =~ s/^([^:]+)://;
+
+  # return the result
+  return new WebService::Cmis::Folder(repository => $this->{repository}, xmlDoc => $result)
+    if $nodeName eq 'entry';
+
+  # some vendors (e.g. nuxeo) return a one-element AtomFeed instead of an
+  # AtomEntry even though the specs are clear in that respect
+
+  throw Error::Simple("invalid result getting a folder parent") 
+    unless $nodeName eq 'feed';
+
+  my $feed = new WebService::Cmis::AtomFeed::Objects(
+    repository => $this->{repository},
+    xmlDoc => $result
+  );
+
+  return $feed->getFirst;
 }
 
 =item getFolderTree -> $atomFeed
@@ -222,7 +240,7 @@ sub getFolderTree {
   my $this = shift;
 
   # Get the descendants link and do a GET against it
-  my $url = $this->getLink(FOLDER_TREE_REL);
+  my $url = $this->getLink(FOLDER_TREE_REL, undef, 1);
 
   unless (defined $url) {
     throw Error::Simple("Unable to determin folder tree link"); # SMELL: use custom exceptions
@@ -314,19 +332,55 @@ sub removeObject {
 
 =item deleteTree
 
-TODO: not implemented yet
+Deletes the folder and all of its descendant objects.
+
+  my $resultSet = $folder->getDescendants()
+  my $size = $resultSet->getSize();
+  my $failedToDelete = $folder.deleteTree()
+  if ($failedToDelete) {
+    ...
+  }
+  
+
+The following optional arguments are supported:
+
+=over 4
+
+=item * allVersions
+
+=item * unfileObjects
+
+=item * continueOnFailure
+
+=back
 
 See CMIS specification document 2.2.4.15
 
 =cut
 
-sub deleteTree { throw WebService::Cmis::NotImplementedException; }
+sub deleteTree { 
+  my $this = shift;
+
+  unless ($this->{repository}->getCapabilities()->{'GetDescendants'}) {
+    throw WebService::Cmis::NotSupportedException("This repository does not support getDescendants");
+  }
+
+  my $url = $this->getDescendantsLink;
+  my $result = $this->{repository}{client}->delete($url, @_); # here go the params
+
+  return unless $result;
+
+  # failedToDelete: A list of identifiers of objects in the folder tree that were not deleted.
+  require WebService::Cmis::AtomFeed::Objects;
+  return new WebService::Cmis::AtomFeed::Objects(repository=>$this->{repository}, xmlDoc=>$result);
+}
+
 
 =back
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2012 Michael Daum
+Copyright 2012-2013 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.

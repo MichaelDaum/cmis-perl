@@ -1,6 +1,8 @@
 #!/usr/bin/perl
 
 use strict;
+use warnings;
+
 use Test::More;
 
 if (!$ENV{TEST_SIGNATURE}) {

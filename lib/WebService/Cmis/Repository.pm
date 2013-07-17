@@ -66,6 +66,7 @@ sub getClient {
   return $_[0]->{client};
 }
 
+
 # internal function to reset cached data
 sub _initData {
   my $this = shift;
@@ -165,7 +166,6 @@ sub getRepositoryInfo {
   my $this = shift;
 
   unless (defined $this->{repositoryInfo}) {
-
     $this->{repositoryInfo}{$_->localname} = $_->string_value
       foreach $this->_xmlDoc->findnodes($CMIS_XPATH_REPOSITORYINFO);
   }
@@ -411,7 +411,8 @@ sub getCollection {
     throw Error::Simple("query collection not supported"); # SMELL: use a custom exception
   }
 
-  my $result = $this->{client}->get($this->getCollectionLink($collectionType), @_);
+  my $link = $this->getCollectionLink($collectionType);
+  my $result = $this->{client}->get($link, @_);
   #writeCmisDebug("result=".$result->toString);
 
   # return the result set
@@ -640,6 +641,11 @@ These optional arguments are supported:
 
 sub getUnfiledDocs {
   my $this = shift;
+
+  unless ($this->getCapabilities->{'Unfiling'}) {
+    throw WebService::Cmis::NotSupportedException("This repository does not support unfiling");
+  }
+
   return $this->getCollection(UNFILED_COLL, @_);
 }
 
@@ -655,23 +661,6 @@ Use the normal paging options.
 sub getTypeDefinitions {
   my $this = shift;
   return $this->getCollection(TYPES_COLL, @_);
-}
-
-
-=item createEmptyXmlDoc 
-
-static helper method that knows how to build an empty Atom entry.
-
-=cut
-
-sub createEmptyXmlDoc { 
-  my $this = shift;
-
-  my $xmlDoc = new XML::LibXML::Document('1.0', 'UTF-8');
-  my $entryElement = $xmlDoc->createElementNS(ATOM_NS, "entry");
-  $xmlDoc->setDocumentElement($entryElement);
-
-  return $xmlDoc;
 }
 
 =item createEntryXmlDoc(
@@ -693,17 +682,14 @@ sub createEntryXmlDoc {
   my %params = @_;
 
   my $xmlDoc = new XML::LibXML::Document('1.0', 'UTF-8');
-
   my $entryElement = $xmlDoc->createElementNS(ATOM_NS, "entry");
-  $entryElement->addChild($xmlDoc->createAttribute('xmlns:app', APP_NS));
-  $entryElement->addChild($xmlDoc->createAttribute('xmlns:cmisra', CMISRA_NS));
-        
   $xmlDoc->setDocumentElement($entryElement);
 
-  if (defined $params{summary}) {
-    my $summaryElement = $entryElement->addNewChild(ATOM_NS, "summary");
-    $summaryElement->addChild($xmlDoc->createTextNode($params{summary}));
-  }
+  $entryElement->setNamespace(APP_NS, "app", 0);
+  $entryElement->setNamespace(CMISRA_NS, "cmisra", 0);
+  $entryElement->setNamespace(CMIS_NS, "cmis", 0);
+        
+  $entryElement->appendTextChild("summary", $params{summary}) if defined $params{summary};
 
   # if there is a File, encode it and add it to the XML
   my $contentFile = $params{contentFile};
@@ -750,25 +736,16 @@ sub createEntryXmlDoc {
     require MIME::Base64;
     $contentData = MIME::Base64::encode_base64($contentData);
 
-    my $contentElement = $xmlDoc->createElementNS(CMISRA_NS, 'cmisra:content');
+    my $contentElement = $xmlDoc->createElement('cmisra:content');
+    $contentElement->appendTextChild("cmisra:mediatype", $mimeType);
+    $contentElement->appendTextChild("cmisra:base64", $contentData);
     $entryElement->appendChild($contentElement);
-
-    my $mediaElement = $xmlDoc->createElementNS(CMISRA_NS, 'cmisra:mediatype');
-    $contentElement->appendChild($mediaElement);
-
-    $mediaElement->addChild($xmlDoc->createTextNode($mimeType));
-
-    my $base64Element = $xmlDoc->createElementNS(CMISRA_NS, 'cmisra:base64');
-    $contentElement->appendChild($base64Element);
-
-    $base64Element->addChild($xmlDoc->createTextNode($contentData));
   }
 
-  my $objectElement = $entryElement->addNewChild(CMISRA_NS,'cmisra:object');
-  $objectElement->addChild($xmlDoc->createAttribute('xmlns:cmis', CMIS_NS));
+  my $objectElement = $entryElement->appendChild($xmlDoc->createElement('cmisra:object'));
 
   if (defined $params{properties}) {
-    my $propsElement = $objectElement->addNewChild(CMIS_NS, 'cmis:properties');
+    my $propsElement = $objectElement->appendChild($xmlDoc->createElement('cmis:properties'));
     
     foreach my $property (@{$params{properties}}) {
       #writeCmisDebug("property=".$property->toString);
@@ -776,24 +753,19 @@ sub createEntryXmlDoc {
       # a name is required for most things, but not for a checkout
       if ($property->getId eq 'cmis:name') {
         writeCmisDebug("got cmis:name property");
-        my $titleElement = $entryElement->addNewChild(ATOM_NS, "title");
-        $titleElement->addChild($xmlDoc->createTextNode($property->getValue));
+        $entryElement->appendTextChild("title", $property->getValue);
       }
 
-      # create property element and adxd to container
+      # create property element and add to container
       $propsElement->appendChild($property->toXml($xmlDoc));
     }
   }
 
   # add folderId
-  if (defined $params{folder}) {
-    my $folderElement = $objectElement->addNewChild(CMIS_NS, 'cmis:folderId');
-    $folderElement->addChild($xmlDoc->createTextNode($params{folder}->getId));
-  }
+  $objectElement->appendTextChild('cmis:folderId', $params{folder}->getId) if defined $params{folder};
 
   # add repositoryId
-  my $repositoryIdElement = $objectElement->addNewChild(CMIS_NS, 'cmis:repositoryId');
-  $repositoryIdElement->addChild($xmlDoc->createTextNode($this->getRepositoryId));
+  $objectElement->appendTextChild('cmis:repositoryId', $this->getRepositoryId);
 
   #print STDERR "### created new entry:\n".$xmlDoc->toString(1)."\n###\n";
   return $xmlDoc;
@@ -987,7 +959,6 @@ sub query {
   my $xmlDoc = $this->_getQueryXmlDoc($statement, @_);
 
   # do the POST
-  #print 'posting:%s' % xmlDoc.toxml(encoding='utf-8')
   my $result = $this->{client}->post($queryUrl, $xmlDoc->toString, CMIS_QUERY_TYPE);
 
   # return the result set
@@ -1013,13 +984,29 @@ sub _getQueryXmlDoc {
 
   foreach my $key (keys %params) {
     my $optionElement = $xmlDoc->createElementNS(CMIS_NS, $key);
-    $optionElement->addChild($xmlDoc->createTextNode($params{$key}));
+    $optionElement->appendText($params{$key});
     $queryElement->appendChild($optionElement);
   }
 
   #writeCmisDebug("query:\n".$xmlDoc->toString(1));
 
   return $xmlDoc;
+}
+
+=item getLatestChangeLogToken () -> $token
+
+returns a token to ge use fetching a changes atom feed.
+
+=cut
+
+sub getLatestChangeLogToken {
+  my $this = shift;
+
+  unless ($this->getCapabilities()->{'Changes'}) {
+    throw WebService::Cmis::NotSupportedException("This repository does not support change logs"); 
+  }
+
+  return $$this->getRepositoryInfo->{latestChangeLogToken};
 }
 
 =item getContentChanges(%params) -> $atomFeed
@@ -1032,7 +1019,7 @@ The following optional arguments are supported:
 
 =over 4
 
-=item changeLogToken
+=item changeLogToken 
 
 =item includeProperties
 
@@ -1051,13 +1038,16 @@ info via Repository.getRepositoryInfo.
 
 sub getContentChanges {
   my $this = shift;
+  my %params = @_;
+  
+  #$params{changeLogToken} = $this->getLatestChangeLogToken() unless defined $params{changeLogToken};
 
-  unless ($this->getCapabilities()->{'ACL'}) {
+  unless ($this->getCapabilities()->{'Changes'}) {
     throw WebService::Cmis::NotSupportedException("This repository does not support change logs"); 
   }
 
   my $changesUrl = $this->getLink(CHANGE_LOG_REL);
-  my $result = $this->{client}->get($changesUrl, @_);
+  my $result = $this->{client}->get($changesUrl, %params);
 
   # return the result set
   require WebService::Cmis::AtomFeed::ChangeEntries;
@@ -1082,6 +1072,8 @@ based on the file. To specify it yourself, pass them in via the contentType and
 To specify a custom object type, pass in a Property for cmis:objectTypeId
 representing the type ID of the instance you want to create. If you do not pass
 in an object type ID, an instance of 'cmis:document' will be created.
+
+See CMIS specification document 2.2.4.1 createDument
 
 =cut
 
@@ -1219,7 +1211,7 @@ Michael Daum C<< <daum@michaeldaumconsulting.com> >>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2012 Michael Daum
+Copyright 2012-2013 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.

@@ -23,7 +23,7 @@ sub test_ObjectType : Tests {
   while (my $objectType = $typeDefs->getNext) {
     isa_ok($objectType, 'WebService::Cmis::ObjectType');
 
-    #print STDERR "attributes=".join(", ", keys %{$objectType->getAttributes})."\n";
+    note("attributes=".join(", ", keys %{$objectType->getAttributes}));
 
     my $id = $objectType->getId;
     my $displayName = $objectType->getDisplayName;
@@ -44,27 +44,27 @@ sub test_ObjectType : Tests {
     my $isControllableACL = $objectType->isControllableACL;
     my $isVersionable = $objectType->isVersionable;
 
-#   print STDERR "id=$id ($objectType->{attributes}{id})\n";
-#   print STDERR "  displayName=$displayName\n";
-#   print STDERR "  description=$description\n";
-#   print STDERR "  link=$link\n";
-#   print STDERR "  baseId=$baseId\n";
-#   print STDERR "  localName=$localName\n";
-#   print STDERR "  localNamespace=$localNamespace\n";
-#   print STDERR "  queryName=$queryName\n";
-#   print STDERR "  contentStreamAllowed=$contentStreamAllowed\n";
-#
-#   print STDERR "  isCreatable=$isCreatable\n";
-#   print STDERR "  isFileable=$isFileable\n";
-#   print STDERR "  isQueryable=$isQueryable\n";
-#   print STDERR "  isFulltextIndexed=$isFulltextIndexed\n";
-#   print STDERR "  isIncludedInSupertypeQuery=$isIncludedInSupertypeQuery\n";
-#   print STDERR "  isControllablePolicy=$isControllablePolicy\n";
-#   print STDERR "  isControllableACL=$isControllableACL\n";
-#   print STDERR "  isVersionable=$isVersionable\n";
+    note("id=$id ($objectType->{attributes}{id}");
+    note("  displayName=$displayName");
+    note("  description=$description");
+    note("  link=$link");
+    note("  baseId=$baseId");
+    note("  localName=$localName");
+    note("  localNamespace=$localNamespace");
+    note("  queryName=$queryName");
+    note("  contentStreamAllowed=$contentStreamAllowed");
+ 
+    note("  isCreatable=$isCreatable");
+    note("  isFileable=$isFileable");
+    note("  isQueryable=$isQueryable");
+    note("  isFulltextIndexed=$isFulltextIndexed");
+    note("  isIncludedInSupertypeQuery=$isIncludedInSupertypeQuery");
+    note("  isControllablePolicy=$isControllablePolicy");
+    note("  isControllableACL=$isControllableACL");
+    note("  isVersionable=$isVersionable");
 
     $objectType->reload;
-    #print STDERR "2 - id=".$objectType->getId.", displayName=".$objectType->getDisplayName.", description=".$objectType->getDescription.", link=".$objectType->getLink."\n";
+    note("2 - id=".$objectType->getId.", displayName=".$objectType->getDisplayName.", description=".$objectType->getDescription.", link=".$objectType->getLink);
 
     is($id, $objectType->getId);
     is($displayName, $objectType->getDisplayName);

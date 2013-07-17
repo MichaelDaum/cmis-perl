@@ -28,10 +28,11 @@ L<WebService::Cmis::Relationship>, L<WebService::Cmis::Policy>.
 
 use strict;
 use warnings;
-use WebService::Cmis qw(:namespaces :relations :contenttypes :collections);
+use WebService::Cmis qw(:namespaces :relations :contenttypes :collections :utils);
 use XML::LibXML qw(:libxml);
 use WebService::Cmis::NotImplementedException;
 use Error qw(:try);
+use URI ();
 use WebService::Cmis::AtomEntry ();
 
 our @ISA = qw(WebService::Cmis::AtomEntry);
@@ -44,7 +45,8 @@ our %classOfBaseTypeId = (
 );
 
 our $CMIS_XPATH_PROPERTIES = new XML::LibXML::XPathExpression('./*[local-name()="object" and namespace-uri()="'.CMISRA_NS.'"]/*[local-name()="properties" and namespace-uri()="'.CMIS_NS.'"]//*[@propertyDefinitionId]');
-our $CMIS_XPATH_ALLOWABLEACTIONS = new XML::LibXML::XPathExpression('./*[local-name() = "object" and namespace-uri()="'.CMISRA_NS.'"]/*[local-name() = "allowableActions" and namespace-uri() ="'.CMIS_NS.'"]');
+our $CMIS_XPATH_ALLOWABLEACTIONS = new XML::LibXML::XPathExpression('//cmis:allowableActions');
+our $CMIS_XPATH_ACL = new XML::LibXML::XPathExpression('//cmis:acl');
 
 =head1 METHODS
 
@@ -82,8 +84,9 @@ sub _initData {
 
   $this->SUPER::_initData;
 
-  undef $this->{properties};
-  undef $this->{allowableActions};
+  $this->{properties} = undef;
+  $this->{allowableActions} = undef;
+  $this->{acl} = undef;
 }
 
 =item DESTROY 
@@ -99,8 +102,8 @@ sub DESTROY {
 
   $this->_initData;
 
-  undef $this->{xmldoc};
-  undef $this->{repository};
+  $this->{xmldoc} = undef;
+  $this->{repository} = undef;
 }
 
 =item reload(%params) 
@@ -116,6 +119,8 @@ reset to the full list of properties, call reload with filter set to
 Parameters:
 
 =over 4
+
+=item * returnVersion 
 
 =item * filter
 
@@ -138,24 +143,31 @@ sub reload {
 
   throw Error::Simple("can't reload Object without an id or xmlDoc") unless defined $this->{id} || defined $this->{xmlDoc};
 
-  #print STDERR "reload this:\n".join("\n", map("   ".$_."=".($this->{$_}||'undef'), keys %$this))."\n";
+  #print STDERR "reload this:\n".join("\n", map("   ".$_."=".($this->{$_}||'undef'), keys %$this))."");
 
   my $byObjectIdUrl = $this->{repository}->getUriTemplate('objectbyid');
 
   require WebService::Cmis::Property::Boolean;
 
-  $byObjectIdUrl =~ s/{id}/$this->getId()/ge;
-  $byObjectIdUrl =~ s/{filter}/$params{filter}||''/ge;
+  my $id = $params{id} || $this->{id} || $this->getId();
+
+  $byObjectIdUrl =~ s/{id}/urlEncode($id)/ge;
+  $byObjectIdUrl =~ s/{filter}/urlEncode($params{filter}||'')/ge;
   $byObjectIdUrl =~ s/{includeAllowableActions}/WebService::Cmis::Property::Boolean->unparse($params{includeAllowableActions}||'false')/ge;
   $byObjectIdUrl =~ s/{includePolicyIds}/WebService::Cmis::Property::Boolean->unparse($params{includePolicyIds}||'false')/ge;
   $byObjectIdUrl =~ s/{includeRelationships}/WebService::Cmis::Property::Boolean->unparse($params{includeRelationships}||'')/ge;
   $byObjectIdUrl =~ s/{includeACL}/WebService::Cmis::Property::Boolean->unparse($params{includeACL}||'false')/ge;
-  $byObjectIdUrl =~ s/{renditionFilter}/$params{renditionFilter}||''/ge;
+  $byObjectIdUrl =~ s/{renditionFilter}/urlEncode($params{renditionFilter}||'')/ge;
+
+  # SMELL: returnVersion not covered by uri template
+  my %extraParams = %{$this->{extra_params}||{}};
+  $extraParams{returnVersion} = $params{returnVersion} if defined $params{returnVersion};
 
   # auto clear cache
-  #$this->{repository}{client}->removeFromCache($byObjectIdUrl, %{$this->{extra_params}});
+  #$this->{repository}{client}->removeFromCache($byObjectIdUrl, %extraParams);
   
-  $this->{xmlDoc} = $this->{repository}{client}->get($byObjectIdUrl, %{$this->{extra_params}});
+  $this->{xmlDoc} = $this->{repository}{client}->get($byObjectIdUrl, %extraParams);
+  $this->{id} = undef; # consume {id} only valid during object creation
   $this->_initData;
 }
 
@@ -166,13 +178,7 @@ returns the object ID for this object.
 =cut
 
 sub getId {
-  my $this = shift;
-
-  unless (defined $this->{id}) { # CAUTION: we must cache this to prevent deep recursion
-    $this->{id} = $this->getProperty("cmis:objectId");
-  }
-
-  return $this->{id};
+  return $_[0]->getProperty("cmis:objectId");
 }
 
 =item getName() -> $name
@@ -219,12 +225,17 @@ See CMIS specification document 2.2.4.8 getProperties
 sub getProperties {
   my ($this, $filter) = @_;
 
-  require WebService::Cmis::Property;
   unless (defined $this->{properties}) {
-    foreach my $propNode ($this->_getDocumentElement->findnodes($CMIS_XPATH_PROPERTIES)) {
+    require WebService::Cmis::Property;
+    my $doc = $this->_getDocumentElement;
+    foreach my $propNode ($doc->findnodes($CMIS_XPATH_PROPERTIES)) {
       my $property = WebService::Cmis::Property::load($propNode);
+      my $propId = $property->getId;
       #print STDERR "property = ".$property->toString."\n";
-      $this->{properties}{$property->getId} = $property;
+      if (defined $this->{properties}{$propId}) {
+        die "duplicate property $propId in ".$doc->toString(1);
+      }
+      $this->{properties}{$propId} = $property;
     }
   }
 
@@ -273,16 +284,28 @@ sub getAllowableActions {
   my $this = shift;
 
   unless (defined $this->{allowableActions}) {
-    $this->reload('includeAllowableActions' => 1); #SMELL: use the allowableActions link
+    my $node;
+
+    if ($this->{xmlDoc}->exists($CMIS_XPATH_ALLOWABLEACTIONS)) {
+      writeCmisDebug("getting allowable actions from doc");
+
+      ($node) = $this->{xmlDoc}->findnodes($CMIS_XPATH_ALLOWABLEACTIONS);
+
+    } else {
+      my $url = $this->getLink(ALLOWABLEACTIONS_REL);
+      my $result = $this->{repository}{client}->get($url);
+      $node = $result->getDocumentElement;
+    }
+
+    #print STDERR "getAllowableActions: result=".$node->toString(2)."\n";
+
     require WebService::Cmis::Property::Boolean;
 
-    my ($allowNode) = $this->_getDocumentElement->findnodes($CMIS_XPATH_ALLOWABLEACTIONS);
-    if ($allowNode) {
-      foreach my $node ($allowNode->childNodes) {
-        next unless $node->nodeType == XML_ELEMENT_NODE;
-        $this->{allowableActions}{$node->localname} = WebService::Cmis::Property::Boolean->parse($node->string_value);
-      } 
-    }
+    foreach my $node ($node->childNodes) {
+      #print STDERR "node=".$node->toString(1)."\n";
+      next unless $node->nodeType == XML_ELEMENT_NODE;
+      $this->{allowableActions}{$node->localname} = WebService::Cmis::Property::Boolean->parse($node->string_value);
+    } 
   }
 
   return $this->{allowableActions};
@@ -303,20 +326,29 @@ See CMIS specification document 2.2.10.1 getACL
 sub getACL {
   my $this = shift;
 
-  unless ($this->{repository}->getCapabilities()->{'ACL'} =~ /^(manage|discover)$/) {
-    throw WebService::Cmis::NotSupportedException("This repository does not allow to manage ACLs"); 
+  unless (defined $this->{acl}) {
+
+    unless ($this->{repository}->getCapabilities()->{'ACL'} =~ /^(manage|discover)$/) {
+      throw WebService::Cmis::NotSupportedException("This repository does not allow to manage ACLs"); 
+    }
+
+    require WebService::Cmis::ACL;
+
+    my $node;
+
+    if ($this->{xmlDoc}->exists($CMIS_XPATH_ACL)) {
+      writeCmisDebug("getting acl from doc");
+      ($node) = $this->{xmlDoc}->findnodes($CMIS_XPATH_ACL);
+    } else {
+      my $url = $this->getLink(ACL_REL);
+      my $result = $this->{repository}{client}->get($url);
+      $node = $result->getDocumentElement;
+    }
+
+    $this->{acl} = new WebService::Cmis::ACL(xmlDoc=>$node);
   }
 
-  require WebService::Cmis::ACL;
-
-  my $url = $this->getLink(ACL_REL);
-  throw Error::Simple("Could not determine the object's ACL URL.") unless defined $url;
-  #print STDERR "acl url = $url\n";
-
-  my $result = $this->{repository}{client}->get($url);
-  #print STDERR "result=".$result->toString(2)."\n";
-
-  return new WebService::Cmis::ACL(xmlDoc=>$result);
+  return $this->{acl};
 }
 
 =item getSelfLink -> $href
@@ -354,20 +386,17 @@ See CMIS specification document 2.2.9.3 getAppliedPolicies
 sub getAppliedPolicies { 
   my $this = shift;
 
+
   # depends on this object's canGetAppliedPolicies allowable action
   unless ($this->getAllowableActions->{'canGetAppliedPolicies'}) {
     throw WebService::Cmis::NotSupportedException('This object has canGetAppliedPolicies set to false'); 
   }
 
-  my $url = $this->getLink(POLICIES_REL, @_);
-  unless ($url) {
-     throw Error::Simple('Could not determine policies URL'); # SMELL: use custom exception
-  }
+  require WebService::Cmis::AtomFeed::Objects;
 
+  my $url = $this->getLink(POLICIES_REL, @_);
   my $result = $this->{repository}{client}->get($url, @_);
 
-  # return the result set
-  require WebService::Cmis::AtomFeed::Objects;
   return new WebService::Cmis::AtomFeed::Objects(repository=>$this->{repository}, xmlDoc=>$result);
 }
 
@@ -407,9 +436,10 @@ sub getObjectParents {
   unless ($parentUrl) {
     throw WebService::Cmis::NotSupportedException('object does not support getObjectParents');
   }
-
   # invoke the URL
   my $result = $this->{repository}{client}->get($parentUrl, @_);
+
+#print STDERR "getObjectParents=".$result->toString(1)."\n";
 
   if ($result->documentElement->localName eq 'feed') {
     # return the result set
@@ -455,17 +485,16 @@ sub getRelationships {
   my $this = shift;
   my %params = @_;
 
+  require WebService::Cmis::AtomFeed::Objects;
+
   my $url = $this->getLink(RELATIONSHIPS_REL);
 
   unless ($url) {
-     throw Error::Simple('could not determine relationships URL'); # SMELL: use custom exception
+    throw Error::Simple('could not determine relationships URL'); 
   }
 
   my $result = $this->{repository}{client}->get($url, @_);
-
-  # return the result set
-  require WebService::Cmis::AtomFeed::Objects;
-  return new WebService::Cmis::AtomFeed::Objects(repository=>$this->{repository}, xmlDoc=>$result);
+  return new WebService::Cmis::AtomFeed::Objects(repository => $this->{repository}, xmlDoc => $result);
 }
 
 =item delete(%params)
@@ -473,9 +502,7 @@ sub getRelationships {
 Deletes this cmis object from the repository. Note that in the case of a Folder
 object, some repositories will refuse to delete it if it contains children and
 some will delete it without complaint. If what you really want to do is delete
-the folder and all of its descendants, use Folder->deleteTree instead.
-
-The following optional arguments are - NOT YET - supported: (TODO)
+the folder and all of its descendants, use L<WebService::Cmis::Folder::deleteTree> instead.
 
 =over 4
 
@@ -509,14 +536,14 @@ See CMIS specification document 2.2.4.13 move
 sub move { 
   my ($this, $sourceFolder, $targetFolder) = @_;
 
-  my $targetUrl = $targetFolder->getLink(DOWN_REL, ATOM_XML_FEED_TYPE_P);
+  return $this->moveTo($targetFolder) unless defined $sourceFolder;
 
-  if ($sourceFolder) {
-    my $uri = new URI($targetUrl);
-    my %queryParams = ($uri->query_form, sourceFolderId=>$sourceFolder->getId);
-    $uri->query_form(%queryParams);
-    $targetUrl = $uri->as_string;
-  }
+  my $targetUrl = $targetFolder->getLink(DOWN_REL, ATOM_XML_FEED_TYPE_P, 1);
+
+  my $uri = new URI($targetUrl);
+  my %queryParams = ($uri->query_form, sourceFolderId=>$sourceFolder->getId);
+  $uri->query_form(%queryParams);
+  $targetUrl = $uri->as_string;
 
   # post it to to the checkedout collection URL
   my $result = $this->{repository}{client}->post($targetUrl, $this->_xmlDoc->toString, ATOM_XML_ENTRY_TYPE);
@@ -636,6 +663,59 @@ sub updateProperties {
   return $this;
 }
 
+=item getSummary -> $summary
+
+overrides AtomEntry::getSummary
+
+=cut
+
+sub getSummary {
+  my $this = shift;
+
+  my $summary;
+
+  $summary = $this->getProperty("cm:description"); # since alfresco 4
+  $summary = $this->getProperty("dc:description") unless defined $summary; # dublin core
+  $summary = $this->SUPER::getSummary() unless defined $summary; # good ol' atom
+
+  return $summary;
+}
+
+=item updateSummary 
+
+overrides AtomEntry::updateSummary 
+
+=cut
+
+sub updateSummary {
+  my ($this, $text) = @_;
+
+  my $vendorName = $this->{repository}->getRepositoryInfo->{vendorName};
+
+# if ($vendorName =~ /alfresco/i) {
+#   return $this->updateProperties([
+#     WebService::Cmis::Property::newString(
+#       id => 'cm:description',
+#       value => $text,
+#     ),
+#   ]);
+# }
+
+  # vendors using dublin core 
+  if ($vendorName =~ /nuxeo/i) {
+    return $this->updateProperties([
+      WebService::Cmis::Property::newString(
+        id => 'dc:description',
+        value => $text,
+      ),
+    ]);
+  }
+
+  # fallback to atom:summary. some vendors sync this into their model properly.
+  return $this->SUPER::updateSummary($text);
+}
+
+
 =item rename($string) -> $this
 
 rename this object updating its cmis:properties
@@ -649,35 +729,6 @@ sub rename {
       value => $_[1],
     ),
   ]);
-}
-
-=item updateSummary($text) -> $this
-
-changes the atom:summary of this object 
-
-=cut
-
-sub updateSummary {
-  my ($this, $text) = @_;
-
-  # get the self link
-  my $selfUrl = $this->getSelfLink;
-
-  # build the entry based on the properties provided
-  my $xmlEntryDoc = $this->{repository}->createEntryXmlDoc(summary => $text);
-
-  # do a PUT of the entry
-  my $result = $this->{repository}{client}->put($selfUrl, $xmlEntryDoc->toString, ATOM_XML_TYPE);
-
-  # reset the xmlDoc for this object with what we got back from
-  # the PUT, then call initData we dont' want to call
-  # self.reload because we've already got the parsed XML--
-  # there's no need to fetch it again
-
-  $this->{xmlDoc} = $result;
-  $this->_initData;
-
-  return $this;
 }
 
 =item applyACL($acl) -> $acl
@@ -708,15 +759,16 @@ sub applyACL {
 
   my $url = $this->getLink(ACL_REL);
   unless ($url) {
-     throw Error::Simple("Could not determine the object's ACL URL"); # SMELL: use custom exception
+     throw Error::Simple("Could not determine the object's ACL URL"); 
   }
 
   my $xmlDoc = $acl->getXmlDoc;
-
-  my $result = $this->{repository}{client}->put($url, $xmlDoc->toString, CMIS_ACL_TYPE);
+  my $result = $this->{repository}{client}->put($url, $xmlDoc->toString(2), CMIS_ACL_TYPE);
   #print STDERR "result=".$result->toString(1)."\n";
 
-  return new WebService::Cmis::ACL(xmlDoc=>$result);
+  $this->{acl} =  new WebService::Cmis::ACL(xmlDoc=>$result);
+
+  return $this->{acl};
 }
 
 =item applyPolicy()
@@ -747,7 +799,7 @@ sub removePolicy { throw WebService::Cmis::NotImplementedException; }
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2012 Michael Daum
+Copyright 2012-2013 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.

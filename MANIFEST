@@ -15,6 +15,7 @@ inc/Module/Install/WriteAll.pm
 inc/WebService/Cmis/Test/ACE.pm
 inc/WebService/Cmis/Test/ACL.pm
 inc/WebService/Cmis/Test/AtomFeed.pm
+inc/WebService/Cmis/Test/ChangeFeed.pm
 inc/WebService/Cmis/Test/Basics.pm
 inc/WebService/Cmis/Test/Client.pm
 inc/WebService/Cmis/Test/Document.pm
@@ -24,6 +25,7 @@ inc/WebService/Cmis/Test/ObjectType.pm
 inc/WebService/Cmis/Test.pm
 inc/WebService/Cmis/Test/Property.pm
 inc/WebService/Cmis/Test/Repository.pm
+inc/WebService/Cmis/Test/Xml.pm
 lib/WebService/Cmis/ACE.pm
 lib/WebService/Cmis/ACL.pm
 lib/WebService/Cmis/AtomEntry.pm
@@ -53,6 +55,10 @@ lib/WebService/Cmis/Property/String.pm
 lib/WebService/Cmis/Relationship.pm
 lib/WebService/Cmis/Repository.pm
 lib/WebService/Cmis/ServerException.pm
+lib/WebService/Cmis/Agent.pm
+lib/WebService/Cmis/Agent/BasicAuth.pm
+lib/WebService/Cmis/Agent/TokenAuth.pm
+lib/WebService/Cmis/Agent/CookieAuth.pm
 Makefile.PL
 MANIFEST
 MANIFEST.SKIP
@@ -61,10 +67,12 @@ README
 SIGNATURE
 t/00-load.t
 t/00-signature.t
-t/01-basics.t
-t/02-client.t
+t/01-client.t
+t/01-xml.t
+t/02-basics.t
 t/03-object.t
 t/04-atom-feed.t
+t/04-change-feed.t
 t/05-object-type.t
 t/06-property.t
 t/07-repository.t
@@ -72,8 +80,11 @@ t/08-acl.t
 t/09-folder.t
 t/10-document.t
 t/11-ace.t
-t/boilerplate.t
 t/data/free.jpg
+t/data/alfresco-object.xml
+t/data/nuxeo-object.xml
+t/data/alfresco-folder-parent.xml
+t/data/nuxeo-folder-parent.xml
 t/manifest.t
 t/pod-coverage.t
 t/pod.t

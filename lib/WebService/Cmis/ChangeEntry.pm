@@ -38,6 +38,23 @@ sub DESTROY {
   undef $this->{properties};
 }
 
+=item _initData
+
+resets the internal cache of this entry.
+
+=cut
+
+sub _initData {
+  my $this = shift;
+
+  $this->SUPER::_initData;
+
+  $this->{properties} = undef;
+  $this->{changeTime} = undef;
+  $this->{changeType} = undef;
+}
+
+
 =item getProperties() -> %properties
 
 returns a hash of L<properties|WebService::CmisProperty> of the change entry. Note that depending on the
@@ -49,12 +66,17 @@ include the actual property values that changed.
 sub getProperties {
   my $this = shift;
 
-  require WebService::Cmis::Property;
   unless (defined $this->{properties}) {
-    foreach my $propNode ($this->{xmlDoc}->findnodes($CMIS_XPATH_PROPERTIES)) {
+    require WebService::Cmis::Property;
+    my $doc = $this->_getDocumentElement;
+    foreach my $propNode ($doc->findnodes($CMIS_XPATH_PROPERTIES)) {
       my $property = WebService::Cmis::Property::load($propNode);
+      my $propId = $property->getId;
       #print STDERR "property = ".$property->toString."\n";
-      $this->{properties}{$property->getId} = $property;
+      if (defined $this->{properties}{$propId}) {
+        die "duplicate property $propId in ".$doc->toString(1);
+      }
+      $this->{properties}{$propId} = $property;
     }
   }
 
@@ -141,10 +163,14 @@ have a self URL so instead of doing a reload with includeACL set to true, we'll
 either see if the XML already has an ACL element and instantiate an ACL with
 it, or we'll get the ACL_REL link, invoke that, and return the result.
 
+SMELL: duplicates WebService::Cmis::Object::ACL
+
 =cut
 
 sub getACL {
   my $this = shift;
+
+  # TODO: add the normal cache dance
 
   unless ($this->{repository}->getCapabilities()->{'ACL'}) {
     throw WebService::Cmis::NotSupportedException("This repository does not support ACLs"); 
@@ -170,7 +196,7 @@ sub getACL {
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2012 Michael Daum
+Copyright 2012-2013 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.

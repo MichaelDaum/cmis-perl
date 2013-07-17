@@ -60,6 +60,7 @@ sub unparse {
   my ($this, $value) = @_;
 
   $value = $this->{value} if ref($this) && !defined $value;
+  $value ||= 0;
 
   my $milliseconds;
   if ($value =~ s/(\.\d+)$//) {
@@ -154,7 +155,7 @@ sub _tzOffset {
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2012 Michael Daum
+Copyright 2012-2013 Michael Daum
 
 This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.  See F<http://dev.perl.org/licenses/artistic.html>.
