@@ -124,41 +124,52 @@ sub test_Document_getContentStream : Test(2) {
 sub test_Document_setContentStream : Test(6) {
   my $this = shift;
 
-  my $obj = $this->getTestDocument;
-  my $id = $obj->getId;
+  my $repo = $this->getRepository;
+  my $contentStreamUpdatability = $repo->getCapabilities->{'ContentStreamUpdatability'};
 
-  note("before id=$id");
+  note("contentStreamUpdatability=$contentStreamUpdatability");
 
-  my $versionLabel = $obj->getProperty("cmis:versionLabel");
-  ok(defined $versionLabel);
-  note("versionLabel=$versionLabel");
+SKIP: {
+    skip "setContentStream not supported", 6, if $contentStreamUpdatability eq 'none';
 
-  $obj->setContentStream(
-    contentFile => $this->{testFile}
-  );
+    my $obj = $this->getTestDocument;
+    my $id = $obj->getId;
 
-  $id = $obj->getId;
-  note("after id=$id");
-  
-  ok(defined $obj->{xmlDoc});
-  #print STDERR "xmlDoc=".$obj->{xmlDoc}->toString(1)."\n";
+    note("before id=$id");
 
-  my $updatedVersionLabel = $obj->getProperty("cmis:versionLabel");
-  ok(defined $updatedVersionLabel);
-  note("versionLabel=$versionLabel, updatedVersionLabel=".($updatedVersionLabel||'undef'));
-  isnt($versionLabel, $updatedVersionLabel);
+    my $versionLabel = $obj->getProperty("cmis:versionLabel");
+    ok(defined $versionLabel);
+    note("versionLabel=$versionLabel");
 
-  my $contentStreamMimeType = $obj->getProperty("cmis:contentStreamMimeType");
-  #print STDERR "contentStreamMimeType=$contentStreamMimeType\n";
-  is($contentStreamMimeType, "image/jpeg");
+    $obj->setContentStream(contentFile => $this->{testFile});
 
-  $obj->getLatestVersion;
-  my $latestVersionLabel = $obj->getProperty("cmis:versionLabel");
-  #print STDERR "xmlDoc=".$obj->{xmlDoc}->toString(1)."\n";
-  note("latestVersionLabel=$latestVersionLabel");
-  is($updatedVersionLabel, $latestVersionLabel);
+    $id = $obj->getId;
+    note("after id=$id");
 
-  $this->deleteTestDocument;
+    ok(defined $obj->{xmlDoc});
+
+    #print STDERR "xmlDoc=".$obj->{xmlDoc}->toString(1)."\n";
+
+    my $updatedVersionLabel = $obj->getProperty("cmis:versionLabel");
+    ok(defined $updatedVersionLabel);
+    note("versionLabel=$versionLabel, updatedVersionLabel=" . ($updatedVersionLabel || 'undef'));
+    ok($contentStreamUpdatability ne 'pwconly' || $versionLabel ne $updatedVersionLabel) or 
+      diag("should have created a new version when updating the content stream");
+
+    my $contentStreamMimeType = $obj->getProperty("cmis:contentStreamMimeType");
+
+    #print STDERR "contentStreamMimeType=$contentStreamMimeType\n";
+    is($contentStreamMimeType, "image/jpeg");
+
+    $obj->getLatestVersion;
+    my $latestVersionLabel = $obj->getProperty("cmis:versionLabel");
+
+    #print STDERR "xmlDoc=".$obj->{xmlDoc}->toString(1)."\n";
+    note("latestVersionLabel=$latestVersionLabel");
+    is($updatedVersionLabel, $latestVersionLabel);
+
+    $this->deleteTestDocument;
+  }
 }
 
 sub test_Document_getContentLink : Test {
