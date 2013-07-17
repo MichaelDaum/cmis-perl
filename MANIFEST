@@ -90,3 +90,4 @@ t/data/nuxeo-folder-parent.xml
 t/manifest.t
 t/pod-coverage.t
 t/pod.t
+t/meta-yml.t

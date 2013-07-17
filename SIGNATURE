@@ -14,10 +14,10 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 cc506cc8988501870d71c41b781a5c19f0113187 Changes
-SHA1 5fd52ea046729b89cc9ebd8500ee3400c21d4379 MANIFEST
+SHA1 39e46c45107f53b522ccf84cb945933e745680d3 Changes
+SHA1 39e56f206cadaf8bf6080a9145af2ed22c3f6556 MANIFEST
 SHA1 efe4bd6ee36dfce278895afa9fbcedd68d5125e0 MANIFEST.SKIP
-SHA1 3f54401b2af066045c11b58a1be7350f89c5010f META.yml
+SHA1 6557ef6427d7c5e225c4eab371a0ef58f152e001 META.yml
 SHA1 fd901f6ec3788840edee9a953a5059bcf0a710fe Makefile.PL
 SHA1 9e2f4d8a72f231794553c66db8d9cc59840d14a9 README
 SHA1 8842ca38ce27ccf75e1ce8f5dfb93fa62d933b2e inc/Module/AutoInstall.pm
@@ -40,7 +40,7 @@ SHA1 3a5d33ff7ef67182efc310f3ae08d07e1bb0b69d inc/WebService/Cmis/Test/AtomFeed.
 SHA1 aeb068c79b11d5396d95ba848ae5bef0edc2e068 inc/WebService/Cmis/Test/Basics.pm
 SHA1 c072a8c8cef8b846f71d0cc71b10597268101974 inc/WebService/Cmis/Test/ChangeFeed.pm
 SHA1 60e69604ddfefd7ba34f96612faad5f23a9bdfa1 inc/WebService/Cmis/Test/Client.pm
-SHA1 d0da30f4cbd95c73ee8eb6def11ec499adf22ac0 inc/WebService/Cmis/Test/Document.pm
+SHA1 ba8d9c6d063d07867ed1d3727d3f248c31069474 inc/WebService/Cmis/Test/Document.pm
 SHA1 17cbd765372d036a6392ba21223cab15e62ad16d inc/WebService/Cmis/Test/Folder.pm
 SHA1 517dc4fc87448e3bf0b132ec4842fc897200d280 inc/WebService/Cmis/Test/Object.pm
 SHA1 df68115f30088fe1cb955d2b5d20688c42075e64 inc/WebService/Cmis/Test/ObjectType.pm
@@ -103,16 +103,17 @@ SHA1 91734810f49f6125878087d9da7bd746a8ab46d7 t/data/free.jpg
 SHA1 de6ecc37612060efe1385b8c0cee6b554f1a44ee t/data/nuxeo-folder-parent.xml
 SHA1 36d584af3e8584b604298459e2a0e844863d306c t/data/nuxeo-object.xml
 SHA1 bb1a599de2481bbeb4d66ad679b47fc34431e73c t/manifest.t
+SHA1 2924361d0713031b92c6b888f11e860d357837f7 t/meta-yml.t
 SHA1 61a8deb17e202b4ecd82e0c4123913806d79b76b t/pod-coverage.t
 SHA1 126d6ed4aa139d6426dd0866abcf90bdb8c459b6 t/pod.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iQEcBAEBAgAGBQJR5njmAAoJEFbHzikUeAidlSwH/iF3tW1swXrn3pnSq88eXyG1
-4a0VyaAdd9rg6IVEhwovyyJeUw8w91xHIzo5AJ6fKXsmg6KyMXt12PZZgtQHBZf0
-5mujm5YSRaJ5tgIGmbNe1VSq65ZcfD2ZLdc8Sk5uc6UIG4cxdZvLwtRwj/d1Gq6S
-I5b+C3xZkS1yFY3O22UPf9RIhYcHDF9az1PrkkorRpreCVghVCcHlFbV6sR0LzTM
-ZzU0gh4oZh4PYJouIGEHJFa46wvFdFAcjfbkF0u1cyRT+4pP14oxXR7bwin0FNaM
-eS4XfyVdG3VdYGdoU3m6Y83OI4O4lfC4VnbdDGXo6EX4MByZMS9ev9VtZ5myaP4=
-=Puv6
+iQEcBAEBAgAGBQJR5oQ7AAoJEFbHzikUeAidAUgH/15d31XUdxPcsxhYZXXDDlZu
+a4dSLpqaXiUVxJq0UHBoYJyha+z2+YMTg5LS+paxUHRhTQGCtVabVsbDpwZgrvW3
+nOXJ/VDh0ggSG3HsamuMiX1L+vRtKU1KIA4i6aX581Msl4yIJhCK/X0nQxo6u4q+
+g1ewNIZ8JHHYQQvv0PSJnrI0MmsAGFM8lVH44zmDYG328tVCe4C/SHLrRNci3Q8v
+P+4HxBQUL0I+u/qZYcXEDQ0GDOEbZlYZMnRQWaeyfHLKNbnZpcp/EwswkwjxdePS
+qX7waxOQP7UTr4PfJD7iyDxJNH9uQsoTCx2F3aoptuuizEofIoKqffe3+ZeSDFE=
+=NdQD
 -----END PGP SIGNATURE-----

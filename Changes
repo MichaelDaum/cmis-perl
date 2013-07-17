@@ -2,6 +2,9 @@ Revision history for WebService-Cmis:
 
 2013-07-17 MichaelDaum <github@michaeldaumconsulting.com>
 
+	 * preparing release 0.09
+	 * fixed test for setContentStream based on caps
+	 * exclude internal functions from pod
 	 * working towards broader coverage
 	   This one basically adds support for Alfresco's new cmis endpoint based
 	   on Apache Chemistry Open Cmis bindings while still retaining
