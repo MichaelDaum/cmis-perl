@@ -44,10 +44,10 @@ Revision history for WebService-Cmis:
 	   alfresco-specific nodes, a regression.
 	   
 	   Nuxeo goes with Dublin Core which makes more sense in my book.  As
-	   gettign a document's tag line seems quite important I tried to smoothen that out
+	   getting a document's tag line seems quite important I tried to smoothen that out
 	   in the client bindings, which sucks of course. At least I was able to read/write
 	   a document's description again on Nuxeo, while getting back read-only on Alfresco
-	   again (Open CMIS bindings).
+	   (Open CMIS bindings).
 
 2012-10-02 MichaelDaum <github@michaeldaumconsulting.com>
 
