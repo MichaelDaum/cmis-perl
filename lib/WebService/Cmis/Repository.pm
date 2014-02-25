@@ -1073,7 +1073,7 @@ To specify a custom object type, pass in a Property for cmis:objectTypeId
 representing the type ID of the instance you want to create. If you do not pass
 in an object type ID, an instance of 'cmis:document' will be created.
 
-See CMIS specification document 2.2.4.1 createDument
+See CMIS specification document 2.2.4.1 createDocument
 
 =cut
 
