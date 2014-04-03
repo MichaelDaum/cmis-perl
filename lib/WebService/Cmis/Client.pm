@@ -21,7 +21,7 @@ Available user agents are:
 
 =item * L<WebService::Cmis::Agent::BasicAuth> (default)
 
-=item * L<WebService::Cmis::Agent::TockenAuth> 
+=item * L<WebService::Cmis::Agent::TokenAuth> 
 
 =item * L<WebService::Cmis::Agent::CookieAuth>
 
@@ -33,7 +33,7 @@ Available user agents are:
       url => "http://cmis.alfresco.com/service/cmis",
       cache => new Cache::FileCache({
         cache_root => "/tmp/cmis_client"
-      },
+      }),
       useragent => new WebSercice::Cmis::Agent::BasicAuth(
         user => "...",
         password => "..."

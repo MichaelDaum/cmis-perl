@@ -6,7 +6,7 @@ WebService::Cmis::Agent::TokenAuth - token-based authentication handler
 
 =head1 DESCRIPTION
 
-This user agent adds tocken-based authentication for subsequent calls to the
+This user agent adds token-based authentication for subsequent calls to the
 CMIS backend while the first one is still performed using HTTP basic auth. Alfresco
 is one server that implements token-based authentication.
 
