@@ -30,16 +30,15 @@ Available user agents are:
   use Cache::FileCache ();
 
   my $client = WebService::Cmis::getClient(
-      url => "http://cmis.alfresco.com/service/cmis",
-      cache => new Cache::FileCache({
-        cache_root => "/tmp/cmis_client"
-      }),
-      useragent => new WebSercice::Cmis::Agent::BasicAuth(
-        user => "...",
-        password => "..."
-      )
+    url => "http://cmis.alfresco.com/service/cmis",
+    cache => new Cache::FileCache({
+      cache_root => "/tmp/cmis_client"
+    }),
+    useragent => new WebSercice::Cmis::Agent::BasicAuth(
+      user => "...",
+      password => "..."
     )
-  )
+  );
   
   my $repo = $client->getRepository;
 
