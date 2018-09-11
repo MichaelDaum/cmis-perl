@@ -15,7 +15,7 @@ SYNOPSIS
         );
 
         my $repo = $client->getRepository;
-        my $root = $client->getRootFolder;
+        my $root = $repo->getRootFolder;
 
 DESCRIPTION
     This library provides a CMIS client library for Perl that can be used to
